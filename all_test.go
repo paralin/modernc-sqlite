@@ -890,3 +890,39 @@ Col 3: DatabaseTypeName "DATE", DecimalSize 0 0 false, Length 922337203685477580
 	}
 	t.Log(b.String())
 }
+
+// https://gitlab.com/cznic/sqlite/-/issues/34
+func TestIssue34(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(tempDir)
+
+	db, err := sql.Open("sqlite", filepath.Join(tempDir, "test.db"))
+	if err != nil {
+		t.Fatalf("test.db open fail: %v", err)
+	}
+
+	defer db.Close()
+
+	_, err = db.Query("CREATE TABLE empty (data TEXT);")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rows, err := db.Query("SELECT data FROM empty")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		t.Fatal("data returned from empty table")
+	}
+
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+}
