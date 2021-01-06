@@ -87,13 +87,16 @@ func reading1Memory(b *testing.B, drivername, file string) {
 	}
 
 	defer r.Close()
-
+	dst := 0
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if !r.Next() {
 			b.Fatal(r.Err())
 		}
-		r.Scan()
+		err = r.Scan(&dst)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 	b.StopTimer()
 	if *oRecsPerSec {
