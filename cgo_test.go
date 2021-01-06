@@ -6,6 +6,8 @@ package sqlite // import "modernc.org/sqlite"
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -13,11 +15,39 @@ import (
 
 const gcoDriver = "sqlite3"
 
-//BenchmarkReading1MemoryNative-12    	 1000000	      7386 ns/op	      88 B/op	       3 allocs/op
-//BenchmarkReading1MemoryCGO-12    	  896272	      1121 ns/op	     112 B/op	       6 allocs/op
+func prepareDatabase() string {
+	//if this fails you should probably clean your folders
+	for i := 0; ; i++ {
+		path := fmt.Sprintf("%dbench.db", i)
+		_, err := os.Stat(path)
+		if os.IsNotExist(err) {
+			return path
+		}
+	}
+}
 
-func BenchmarkReading1MemoryNative(b *testing.B) {
-	db, err := sql.Open(driverName, "file::memory:")
+var drivers = []string{
+	driverName,
+	gcoDriver,
+}
+
+var inMemory = []bool{
+	true,
+	false,
+}
+
+func makename(inMemory bool, driver string) string {
+	name := driver
+	if inMemory {
+		name += "InMemory"
+	} else {
+		name += "OnDisk"
+	}
+	return name
+}
+
+func reading1Memory(b *testing.B, drivername, file string) {
+	db, err := sql.Open(drivername, file)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -59,7 +89,7 @@ func BenchmarkReading1MemoryNative(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if !r.Next() {
-			b.Fatal(err)
+			b.Fatal(r.Err())
 		}
 		r.Scan()
 	}
@@ -69,55 +99,22 @@ func BenchmarkReading1MemoryNative(b *testing.B) {
 	}
 }
 
-func BenchmarkReading1MemoryCGO(b *testing.B) {
-	db, err := sql.Open(gcoDriver, "file::memory:")
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	defer func() {
-		db.Close()
-	}()
-
-	if _, err := db.Exec(`
-	create table t(i int);
-	begin;
-	`); err != nil {
-		b.Fatal(err)
-	}
-
-	s, err := db.Prepare("insert into t values(?)")
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	defer s.Close()
-
-	for i := 0; i < b.N; i++ {
-		if _, err := s.Exec(int64(i)); err != nil {
-			b.Fatal(err)
+func BenchmarkReading1(b *testing.B) {
+	for _, memory := range inMemory {
+		filename := "file::memory:"
+		if !memory {
+			filename = prepareDatabase()
 		}
-	}
-	if _, err := db.Exec("commit"); err != nil {
-		b.Fatal(err)
-	}
-
-	r, err := db.Query("select * from t")
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	defer r.Close()
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		if !r.Next() {
-			b.Fatal(err)
+		for _, driver := range drivers {
+			b.Run(makename(memory, driver), func(b *testing.B) {
+				reading1Memory(b, driver, filename)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
 		}
-		r.Scan()
-	}
-	b.StopTimer()
-	if *oRecsPerSec {
-		b.SetBytes(1e6)
 	}
 }
