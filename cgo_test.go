@@ -234,3 +234,23 @@ func BenchmarkInsertComparative(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkReading1(b *testing.B) {
+	for _, memory := range inMemory {
+		filename := "file::memory:"
+		if !memory {
+			filename = prepareDatabase()
+		}
+		for _, driver := range drivers {
+			b.Run(makename(memory, driver), func(b *testing.B) {
+				reading1Memory(b, driver, filename)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+	}
+}
