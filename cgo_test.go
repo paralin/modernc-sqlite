@@ -19,13 +19,19 @@ import (
 
 const gcoDriver = "sqlite3"
 const nativeC = "CNative"
+<<<<<<< HEAD
 const nativeGO = "GONative"
+=======
+>>>>>>> 44dc0cc (rebase cgo tests)
 
 var drivers = []string{
 	//driverName,
 	//gcoDriver,
 	nativeC,
+<<<<<<< HEAD
 	nativeGO,
+=======
+>>>>>>> 44dc0cc (rebase cgo tests)
 }
 
 var inMemory = []bool{
