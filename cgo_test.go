@@ -21,8 +21,8 @@ const gcoDriver = "sqlite3"
 const nativeC = "CNative"
 
 var drivers = []string{
-	//driverName,
-	//gcoDriver,
+	driverName,
+	gcoDriver,
 	nativeC,
 }
 

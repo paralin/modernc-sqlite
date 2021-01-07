@@ -41,7 +41,6 @@ package sqlite
 //        return NULL;
 //    }
 //    for (int i = 0; i < n; i++){
-//        //printf("%d\n", i);
 //        if (sqlite3_bind_int(stm, 1, i) != SQLITE_OK) {
 //            printf("failed to bind value!!\n");
 //            sqlite3_close(DB);
@@ -82,8 +81,6 @@ package sqlite
 //            return;
 //        }
 //        int res = sqlite3_column_int(stm, 0);
-//        printf("%d\n", res);
-//        sqlite3_reset(stm);
 //    }
 //    sqlite3_finalize(stm);
 //    return;
