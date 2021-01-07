@@ -19,11 +19,13 @@ import (
 
 const gcoDriver = "sqlite3"
 const nativeC = "CNative"
+const nativeGO = "GONative"
 
 var drivers = []string{
-	driverName,
-	gcoDriver,
+	//driverName,
+	//gcoDriver,
 	nativeC,
+	nativeGO,
 }
 
 var inMemory = []bool{
@@ -42,10 +44,13 @@ func makename(inMemory bool, driver string, e int) string {
 }
 
 func benchmarkRead(b *testing.B, drivername, file string, n int) {
-	libc.MemAuditStart()
 	os.Remove(file)
 	if drivername == nativeC {
-		reading1MemoryNative(b, file, n)
+		reading1NativeC(b, file, n)
+		return
+	}
+	if drivername == nativeGO {
+		reading1NativeGO(b, file, n)
 		return
 	}
 
