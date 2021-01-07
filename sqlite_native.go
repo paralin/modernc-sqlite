@@ -35,11 +35,11 @@ func reading1NativeC(b *testing.B, filename string, n int) {
 func reading1NativeGO(b *testing.B, filename string, n int) {
 	tls := libc.NewTLS()
 	cs := C.CString(filename)
-	db := prepareReading1(tls, uintptr(unsafe.Pointer(cs)), int32(n))
+	db := xprepareReading1(tls, uintptr(unsafe.Pointer(cs)), int32(n))
 	C.free(unsafe.Pointer(cs))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		reading1native(tls, db, int32(n))
+		xreading1native(tls, db, int32(n))
 	}
 	sqlite3.Xsqlite3_close(tls, db)
 }
