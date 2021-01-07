@@ -8,9 +8,7 @@ package sqlite
 
 // #cgo LDFLAGS: -lsqlite3
 // #include <stdlib.h>
-// #include <stdio.h>
 // #include <sqlite3.h>
-// #include <string.h>
 //
 // sqlite3* prepareReading1(char * filename, int n);
 // void reading1native(sqlite3 *DB, int n);
