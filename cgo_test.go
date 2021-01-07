@@ -41,24 +41,11 @@ func makename(inMemory bool, driver string, e int) string {
 	return fmt.Sprintf("%s1e%d", name, e)
 }
 
-<<<<<<< HEAD
 func benchmarkRead(b *testing.B, drivername, file string, n int) {
-<<<<<<< HEAD
 	libc.MemAuditStart()
-=======
-=======
-<<<<<<< HEAD
-func reading1Memory(b *testing.B, drivername, file string, n int) {
->>>>>>> 5238637 (new cgo test)
->>>>>>> 5b59db2 (new cgo test)
 	os.Remove(file)
 	if drivername == nativeC {
 		reading1MemoryNative(b, file, n)
-=======
-func reading1Memory(b *testing.B, drivername, file string) {
-	if drivername == nativeC {
-		reading1MemoryNative(b, file, b.N)
->>>>>>> 9320630 (new cgo test)
 		return
 	}
 
@@ -135,17 +122,15 @@ func BenchmarkReading1(b *testing.B) {
 			filename = filepath.Join(dir, "test.db")
 		}
 		for _, driver := range drivers {
-			for i, n := range []int{1e1, 1e2, 1e3, 1e4, 1e5, 1e6} {
-				b.Run(makename(memory, driver, i+1), func(b *testing.B) {
-					benchmarkRead(b, driver, filename, n)
-					if !memory {
-						err := os.Remove(filename)
-						if err != nil {
-							b.Fatal(err)
-						}
+			b.Run(makename(memory, driver), func(b *testing.B) {
+				reading1Memory(b, driver, filename)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
 					}
-				})
-			}
+				}
+			})
 		}
 	}
 }
@@ -226,26 +211,6 @@ func BenchmarkInsertComparative(b *testing.B) {
 					}
 				})
 			}
-		}
-	}
-}
-
-func BenchmarkReading1(b *testing.B) {
-	for _, memory := range inMemory {
-		filename := "file::memory:"
-		if !memory {
-			filename = filepath.Join(dir, "test.db")
-		}
-		for _, driver := range drivers {
-			b.Run(makename(memory, driver), func(b *testing.B) {
-				reading1Memory(b, driver, filename)
-				if !memory {
-					err := os.Remove(filename)
-					if err != nil {
-						b.Fatal(err)
-					}
-				}
-			})
 		}
 	}
 }
