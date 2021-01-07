@@ -19,19 +19,24 @@ import (
 
 const gcoDriver = "sqlite3"
 const nativeC = "CNative"
-<<<<<<< HEAD
 const nativeGO = "GONative"
-=======
->>>>>>> 44dc0cc (rebase cgo tests)
+
+func prepareDatabase() string {
+	//if this fails you should probably clean your folders
+	for i := 0; ; i++ {
+		path := fmt.Sprintf("%dbench.db", i)
+		_, err := os.Stat(path)
+		if os.IsNotExist(err) {
+			return path
+		}
+	}
+}
 
 var drivers = []string{
 	//driverName,
 	//gcoDriver,
 	nativeC,
-<<<<<<< HEAD
 	nativeGO,
-=======
->>>>>>> 44dc0cc (rebase cgo tests)
 }
 
 var inMemory = []bool{
@@ -231,26 +236,6 @@ func BenchmarkInsertComparative(b *testing.B) {
 					}
 				})
 			}
-		}
-	}
-}
-
-func BenchmarkReading1(b *testing.B) {
-	for _, memory := range inMemory {
-		filename := "file::memory:"
-		if !memory {
-			filename = prepareDatabase()
-		}
-		for _, driver := range drivers {
-			b.Run(makename(memory, driver), func(b *testing.B) {
-				reading1Memory(b, driver, filename)
-				if !memory {
-					err := os.Remove(filename)
-					if err != nil {
-						b.Fatal(err)
-					}
-				}
-			})
 		}
 	}
 }
