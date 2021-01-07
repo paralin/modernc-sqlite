@@ -41,11 +41,24 @@ func makename(inMemory bool, driver string, e int) string {
 	return fmt.Sprintf("%s1e%d", name, e)
 }
 
+<<<<<<< HEAD
 func benchmarkRead(b *testing.B, drivername, file string, n int) {
+<<<<<<< HEAD
 	libc.MemAuditStart()
+=======
+=======
+<<<<<<< HEAD
+func reading1Memory(b *testing.B, drivername, file string, n int) {
+>>>>>>> 5238637 (new cgo test)
+>>>>>>> 5b59db2 (new cgo test)
 	os.Remove(file)
 	if drivername == nativeC {
 		reading1MemoryNative(b, file, n)
+=======
+func reading1Memory(b *testing.B, drivername, file string) {
+	if drivername == nativeC {
+		reading1MemoryNative(b, file, b.N)
+>>>>>>> 9320630 (new cgo test)
 		return
 	}
 
@@ -221,7 +234,7 @@ func BenchmarkReading1(b *testing.B) {
 	for _, memory := range inMemory {
 		filename := "file::memory:"
 		if !memory {
-			filename = prepareDatabase()
+			filename = filepath.Join(dir, "test.db")
 		}
 		for _, driver := range drivers {
 			b.Run(makename(memory, driver), func(b *testing.B) {
