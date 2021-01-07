@@ -33,8 +33,8 @@ func prepareDatabase() string {
 }
 
 var drivers = []string{
-	//driverName,
-	//gcoDriver,
+	driverName,
+	gcoDriver,
 	nativeC,
 	nativeGO,
 }
