@@ -1,2 +1,0 @@
-TARGET_GOOS=linux TARGET_GOARCH=amd64 go generate 2>&1 | tee /tmp/log-generate-sqlite-linux-amd64
-Downloading 2.42 MB from https://www.sqlite.org/2020/sqlite-amalgamation-3330000.zip

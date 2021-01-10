@@ -133,7 +133,7 @@ func benchmarkRead(b *testing.B, drivername, file string, n int) {
 func BenchmarkReading1(b *testing.B) {
 	dir := b.TempDir()
 	for _, memory := range inMemory {
-		filename := "file::memory:"
+		filename := ":memory::"
 		if !memory {
 			filename = filepath.Join(dir, "test.db")
 		}
@@ -195,7 +195,7 @@ func benchmarkInsertComparative(b *testing.B, drivername, file string, n int) {
 		if _, err := db.Exec("begin"); err != nil {
 			b.Fatal(err)
 		}
-		if err, _ := db.Exec("delete from t"); err != nil {
+		if _, err := db.Exec("delete from t"); err != nil {
 			b.Fatal(err)
 		}
 
@@ -220,7 +220,7 @@ func benchmarkInsertComparative(b *testing.B, drivername, file string, n int) {
 func BenchmarkInsertComparative(b *testing.B) {
 	dir := b.TempDir()
 	for _, memory := range inMemory {
-		filename := "file::memory:"
+		filename := ":memory:"
 		if !memory {
 			filename = filepath.Join(dir, "test.db")
 		}
