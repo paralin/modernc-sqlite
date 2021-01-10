@@ -46,11 +46,11 @@ func makename(inMemory bool, driver string, e int) string {
 func benchmarkRead(b *testing.B, drivername, file string, n int) {
 	os.Remove(file)
 	if drivername == nativeC {
-		reading1NativeC(b, file, n)
+		benchmarkReadNativeC(b, file, n)
 		return
 	}
 	if drivername == nativeGO {
-		reading1NativeGO(b, file, n)
+		benchmarkReadNativeGO(b, file, n)
 		return
 	}
 
@@ -143,6 +143,15 @@ func BenchmarkReading1(b *testing.B) {
 func benchmarkInsertComparative(b *testing.B, drivername, file string, n int) {
 	libc.MemAuditStart()
 	os.Remove(file)
+	if drivername == nativeC {
+		benchmarkInsertComparativeNativeC(b, file, n)
+		return
+	}
+	if drivername == nativeGO {
+		benchmarkInsertComparativeNativeGO(b, file, n)
+		return
+	}
+
 	db, err := sql.Open(drivername, file)
 	if err != nil {
 		b.Fatal(err)
@@ -175,7 +184,7 @@ func benchmarkInsertComparative(b *testing.B, drivername, file string, n int) {
 		if _, err := db.Exec("begin"); err != nil {
 			b.Fatal(err)
 		}
-		if err, _ := db.Exec("delete * from t"); err != nil {
+		if err, _ := db.Exec("delete from t"); err != nil {
 			b.Fatal(err)
 		}
 

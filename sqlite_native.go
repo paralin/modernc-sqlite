@@ -10,8 +10,10 @@ package sqlite
 // #include <stdlib.h>
 // #include <sqlite3.h>
 //
-// sqlite3* prepareReading1(char * filename, int n);
-// void reading1native(sqlite3 *DB, int n);
+// sqlite3* prepareReading(char * filename, int n);
+// void reading(sqlite3 *DB, int n);
+// sqlite3* prepareInsertComparative(char * filename, int n);
+// void insertComparative(sqlite3 *DB, int n);
 import "C"
 import (
 	"testing"
@@ -21,25 +23,48 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func reading1NativeC(b *testing.B, filename string, n int) {
+func benchmarkReadNativeC(b *testing.B, filename string, n int) {
 	cs := C.CString(filename)
-	db := C.prepareReading1(cs, C.int(n))
+	db := C.prepareReading(cs, C.int(n))
 	C.free(unsafe.Pointer(cs))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		C.reading1native(db, C.int(n))
+		C.reading(db, C.int(n))
 	}
 	C.sqlite3_close(db)
 }
 
-func reading1NativeGO(b *testing.B, filename string, n int) {
+func benchmarkReadNativeGO(b *testing.B, filename string, n int) {
 	tls := libc.NewTLS()
 	cs := C.CString(filename)
-	db := xprepareReading1(tls, uintptr(unsafe.Pointer(cs)), int32(n))
+	db := prepareReading(tls, uintptr(unsafe.Pointer(cs)), int32(n))
 	C.free(unsafe.Pointer(cs))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		xreading1native(tls, db, int32(n))
+		reading(tls, db, int32(n))
+	}
+	sqlite3.Xsqlite3_close(tls, db)
+}
+
+func benchmarkInsertComparativeNativeC(b *testing.B, filename string, n int) {
+	cs := C.CString(filename)
+	db := C.prepareInsertComparative(cs, C.int(n))
+	C.free(unsafe.Pointer(cs))
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		C.insertComparative(db, C.int(n))
+	}
+	C.sqlite3_close(db)
+}
+
+func benchmarkInsertComparativeNativeGO(b *testing.B, filename string, n int) {
+	tls := libc.NewTLS()
+	cs := C.CString(filename)
+	db := prepareInsertComparative(tls, uintptr(unsafe.Pointer(cs)), int32(n))
+	C.free(unsafe.Pointer(cs))
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		insertComparative(tls, db, int32(n))
 	}
 	sqlite3.Xsqlite3_close(tls, db)
 }
