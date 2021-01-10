@@ -18,8 +18,8 @@ import (
 )
 
 const cgoDriver = "sqlite3"
-const nativeC = "CNative"
-const nativeGO = "GONative"
+const nativeC = "c"
+const nativeGO = "go"
 
 func prepareDatabase() string {
 	//if this fails you should probably clean your folders
@@ -35,8 +35,6 @@ func prepareDatabase() string {
 var drivers = []string{
 	driverName,
 	cgoDriver,
-	nativeC,
-	nativeGO,
 }
 
 var inMemory = []bool{
@@ -56,15 +54,6 @@ func makename(inMemory bool, driver string, e int) string {
 
 func benchmarkRead(b *testing.B, drivername, file string, n int) {
 	os.Remove(file)
-	if drivername == nativeC {
-		benchmarkReadNativeC(b, file, n)
-		return
-	}
-	if drivername == nativeGO {
-		benchmarkReadNativeGO(b, file, n)
-		return
-	}
-
 	db, err := sql.Open(drivername, file)
 	if err != nil {
 		b.Fatal(err)
@@ -150,18 +139,41 @@ func BenchmarkReading1(b *testing.B) {
 		}
 	}
 }
+func BenchmarkReading1Native(b *testing.B) {
+	dir := b.TempDir()
+	for _, memory := range inMemory {
+		filename := ":memory::"
+		if !memory {
+			filename = filepath.Join(dir, "test.db")
+		}
+		for i, n := range []int{1e1, 1e2, 1e3, 1e4, 1e5, 1e6} {
+			b.Run(makename(memory, nativeGO, i+1), func(b *testing.B) {
+				benchmarkReadNativeGO(b, filename, n)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+		for i, n := range []int{1e1, 1e2, 1e3, 1e4, 1e5, 1e6} {
+			b.Run(makename(memory, nativeC, i+1), func(b *testing.B) {
+				benchmarkReadNativeC(b, filename, n)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+	}
+}
 
 func benchmarkInsertComparative(b *testing.B, drivername, file string, n int) {
 	libc.MemAuditStart()
 	os.Remove(file)
-	if drivername == nativeC {
-		benchmarkInsertComparativeNativeC(b, file, n)
-		return
-	}
-	if drivername == nativeGO {
-		benchmarkInsertComparativeNativeGO(b, file, n)
-		return
-	}
 
 	db, err := sql.Open(drivername, file)
 	if err != nil {
@@ -236,6 +248,38 @@ func BenchmarkInsertComparative(b *testing.B) {
 					}
 				})
 			}
+		}
+	}
+}
+
+func BenchmarkInsertComparativeNative(b *testing.B) {
+	dir := b.TempDir()
+	for _, memory := range inMemory {
+		filename := ":memory:"
+		if !memory {
+			filename = filepath.Join(dir, "test.db")
+		}
+		for i, n := range []int{1e1, 1e2, 1e3, 1e4, 1e5, 1e6} {
+			b.Run(makename(memory, nativeGO, i+1), func(b *testing.B) {
+				benchmarkInsertComparativeNativeGO(b, filename, n)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+		for i, n := range []int{1e1, 1e2, 1e3, 1e4, 1e5, 1e6} {
+			b.Run(makename(memory, nativeC, i+1), func(b *testing.B) {
+				benchmarkInsertComparativeNativeC(b, filename, n)
+				if !memory {
+					err := os.Remove(filename)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
 		}
 	}
 }
