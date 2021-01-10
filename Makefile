@@ -167,5 +167,4 @@ tclshort:
 	# grep -c 'Error:' log || true
 
 generate_go_native:
-	ccgo -o bench.go bench.c -lmodernc.org/sqlite/lib -pkgname sqlite -export-typedefs=x -export-structs=x -export-enums=x -export-defines=x -export-externs=x -export-fields=x
-	rm capi_*.go
+	ccgo -o bench.go bench.c -lmodernc.org/sqlite/lib -pkgname sqlite -unexported-by-default -nocapi
