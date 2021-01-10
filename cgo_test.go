@@ -17,7 +17,7 @@ import (
 	"modernc.org/libc"
 )
 
-const gcoDriver = "sqlite3"
+const cgoDriver = "sqlite3"
 const nativeC = "CNative"
 const nativeGO = "GONative"
 
@@ -34,7 +34,7 @@ func prepareDatabase() string {
 
 var drivers = []string{
 	driverName,
-	gcoDriver,
+	cgoDriver,
 	nativeC,
 	nativeGO,
 }
