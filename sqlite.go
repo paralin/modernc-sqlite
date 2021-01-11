@@ -21,7 +21,7 @@ import (
 
 	"modernc.org/libc"
 	"modernc.org/libc/sys/types"
-	"modernc.org/sqlite/lib"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 var (
@@ -435,8 +435,9 @@ func newStmt(c *conn, sql string) (*stmt, error) {
 	if err != nil {
 		return nil, err
 	}
+	stm := stmt{c: c, psql: p}
 
-	return &stmt{c: c, psql: p}, nil
+	return &stm, nil
 }
 
 // Close closes the statement.
@@ -468,24 +469,6 @@ func toNamedValues(vals []driver.Value) (r []driver.NamedValue) {
 
 func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Result, err error) {
 	var pstmt uintptr
-
-	donech := make(chan struct{})
-
-	go func() {
-		select {
-		case <-ctx.Done():
-			if pstmt != 0 {
-				s.c.interrupt(s.c.db)
-			}
-		case <-donech:
-		}
-	}()
-
-	defer func() {
-		pstmt = 0
-		close(donech)
-	}()
-
 	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0; {
 		if pstmt, err = s.c.prepareV2(&psql); err != nil {
 			return nil, err
@@ -494,13 +477,7 @@ func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Res
 		if pstmt == 0 {
 			continue
 		}
-
-		if err := func() (err error) {
-			defer func() {
-				if e := s.c.finalize(pstmt); e != nil && err == nil {
-					err = e
-				}
-			}()
+		err = func() (err error) {
 
 			n, err := s.c.bindParameterCount(pstmt)
 			if err != nil {
@@ -535,9 +512,22 @@ func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Res
 			}
 
 			return nil
-		}(); err != nil {
+		}()
+
+		if e := s.c.finalize(pstmt); e != nil && err == nil {
+			err = e
+		}
+
+		if err != nil {
 			return nil, err
 		}
+
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 	}
 	return newResult(s.c)
 }
@@ -567,23 +557,6 @@ func (s *stmt) Query(args []driver.Value) (driver.Rows, error) { //TODO StmtQuer
 func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Rows, err error) {
 	var pstmt uintptr
 
-	donech := make(chan struct{})
-
-	go func() {
-		select {
-		case <-ctx.Done():
-			if pstmt != 0 {
-				s.c.interrupt(s.c.db)
-			}
-		case <-donech:
-		}
-	}()
-
-	defer func() {
-		pstmt = 0
-		close(donech)
-	}()
-
 	var allocs []uintptr
 	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0; {
 		if pstmt, err = s.c.prepareV2(&psql); err != nil {
@@ -594,13 +567,7 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 			continue
 		}
 
-		if err = func() (err error) {
-			defer func() {
-				if e := s.c.finalize(pstmt); e != nil && err == nil {
-					err = e
-				}
-			}()
-
+		err = func() (err error) {
 			n, err := s.c.bindParameterCount(pstmt)
 			if err != nil {
 				return err
@@ -649,9 +616,20 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 				pstmt = 0
 			}
 			return nil
-		}(); err != nil {
+		}()
+		if e := s.c.finalize(pstmt); e != nil && err == nil {
+			err = e
+		}
+
+		if err != nil {
 			return nil, err
 		}
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 	}
 	return r, err
 }
@@ -697,7 +675,7 @@ func (t *tx) exec(ctx context.Context, sql string) (err error) {
 	donech := make(chan struct{})
 
 	defer close(donech)
-
+	//no loop means we need a go-routine, otherwise it would be a useless context
 	go func() {
 		select {
 		case <-ctx.Done():
