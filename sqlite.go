@@ -469,7 +469,25 @@ func toNamedValues(vals []driver.Value) (r []driver.NamedValue) {
 
 func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Result, err error) {
 	var pstmt uintptr
-	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0; {
+	done := false
+	if ctx != nil && ctx.Done() != nil {
+		donech := make(chan struct{})
+
+		go func() {
+			select {
+			case <-ctx.Done():
+				done = true
+				s.c.interrupt(s.c.db)
+			case <-donech:
+			}
+		}()
+
+		defer func() {
+			close(donech)
+		}()
+	}
+
+	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0 && !done; {
 		if pstmt, err = s.c.prepareV2(&psql); err != nil {
 			return nil, err
 		}
@@ -521,13 +539,6 @@ func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Res
 		if err != nil {
 			return nil, err
 		}
-
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-
 	}
 	return newResult(s.c)
 }
@@ -557,8 +568,26 @@ func (s *stmt) Query(args []driver.Value) (driver.Rows, error) { //TODO StmtQuer
 func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Rows, err error) {
 	var pstmt uintptr
 
+	done := false
+	if ctx != nil && ctx.Done() != nil {
+		donech := make(chan struct{})
+
+		go func() {
+			select {
+			case <-ctx.Done():
+				done = true
+				s.c.interrupt(s.c.db)
+			case <-donech:
+			}
+		}()
+
+		defer func() {
+			close(donech)
+		}()
+	}
+
 	var allocs []uintptr
-	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0; {
+	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0 && !done; {
 		if pstmt, err = s.c.prepareV2(&psql); err != nil {
 			return nil, err
 		}
@@ -624,12 +653,6 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 		if err != nil {
 			return nil, err
 		}
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-
 	}
 	return r, err
 }
@@ -670,19 +693,23 @@ func (t *tx) exec(ctx context.Context, sql string) (err error) {
 	}
 
 	defer t.c.free(psql)
-
 	//TODO use t.conn.ExecContext() instead
-	donech := make(chan struct{})
 
-	defer close(donech)
-	//no loop means we need a go-routine, otherwise it would be a useless context
-	go func() {
-		select {
-		case <-ctx.Done():
-			t.c.interrupt(t.c.db)
-		case <-donech:
-		}
-	}()
+	if ctx != nil && ctx.Done() != nil {
+		donech := make(chan struct{})
+
+		go func() {
+			select {
+			case <-ctx.Done():
+				t.c.interrupt(t.c.db)
+			case <-donech:
+			}
+		}()
+
+		defer func() {
+			close(donech)
+		}()
+	}
 
 	if rc := sqlite3.Xsqlite3_exec(t.c.tls, t.c.db, psql, 0, 0, 0); rc != sqlite3.SQLITE_OK {
 		return t.c.errstr(rc)
