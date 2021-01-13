@@ -367,6 +367,7 @@ func main() {
 	makeMpTest(goos, goarch, more)
 	makeSpeedTest(goos, goarch, more)
 	makeTestfixture(goos, goarch, more)
+	makeBenchmark(goos, goarch, more)
 
 	dst := filepath.FromSlash("testdata/tcl")
 	if err := os.MkdirAll(dst, 0770); err != nil {
@@ -443,7 +444,7 @@ func configure(goos, goarch string) {
 func newCmd(bin string, args ...string) *exec.Cmd {
 	fmt.Printf("==== newCmd %s\n", bin)
 	for _, v := range args {
-		fmt.Printf("\t%v\n", v)
+		fmt.Printf("\t%v \\\n", v)
 	}
 	r := exec.Command(bin, args...)
 	r.Stdout = os.Stdout
@@ -630,6 +631,28 @@ func makeSqlite(goos, goarch string, more []string) {
 				"-trace-translation-units",
 				volatiles,
 				filepath.Join(sqliteDir, "sqlite3.c"),
+			},
+			more,
+			config)...,
+	)
+	if err := cmd.Run(); err != nil {
+		fail("%s\n", err)
+	}
+}
+
+func makeBenchmark(goos, goarch string, more []string) {
+	cmd := newCmd(
+		"ccgo",
+		join(
+			[]string{
+				"-lmodernc.org/sqlite/lib",
+				"-pkgname", "sqlite",
+				"-I" + filepath.Join(sqliteDir, "sqlite3.c"),
+				"-o", filepath.FromSlash(fmt.Sprintf("bench_%s_%s.go", goos, goarch)),
+				"-trace-translation-units",
+				"-unexported-by-default",
+				"-nocapi",
+				"cbench/bench.c",
 			},
 			more,
 			config)...,
