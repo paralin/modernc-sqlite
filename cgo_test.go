@@ -122,23 +122,26 @@ func benchmarkRead(b *testing.B, drivername, file string, n int) {
 func BenchmarkReading1(b *testing.B) {
 	dir := b.TempDir()
 	for _, memory := range inMemory {
-		filename := ":memory::"
+		filename := "file::memory:"
 		if !memory {
 			filename = filepath.Join(dir, "test.db")
 		}
 		for _, driver := range drivers {
-			b.Run(makename(memory, driver), func(b *testing.B) {
-				reading1Memory(b, driver, filename)
-				if !memory {
-					err := os.Remove(filename)
-					if err != nil {
-						b.Fatal(err)
+			for i, n := range []int{1e1, 1e2, 1e3, 1e4, 1e5, 1e6} {
+				b.Run(makename(memory, driver, i+1), func(b *testing.B) {
+					benchmarkRead(b, driver, filename, n)
+					if !memory {
+						err := os.Remove(filename)
+						if err != nil {
+							b.Fatal(err)
+						}
 					}
-				}
-			})
+				})
+			}
 		}
 	}
 }
+
 func BenchmarkReading1Native(b *testing.B) {
 	dir := b.TempDir()
 	for _, memory := range inMemory {

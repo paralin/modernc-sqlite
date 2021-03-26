@@ -15,574 +15,17 @@ var _ = math.Pi
 var _ reflect.Kind
 var _ unsafe.Pointer
 
-const (
-	__unusedBIG_ENDIAN                            = 4321
-	__unusedBUFSIZ                                = 8192
-	__unusedBYTE_ORDER                            = 1234
-	__unusedEOF                                   = -1
-	__unusedEXIT_FAILURE                          = 1
-	__unusedEXIT_SUCCESS                          = 0
-	__unusedFD_SETSIZE                            = 1024
-	__unusedFILENAME_MAX                          = 4096
-	__unusedFOPEN_MAX                             = 16
-	__unusedFTS5_TOKENIZE_AUX                     = 0x0008
-	__unusedFTS5_TOKENIZE_DOCUMENT                = 0x0004
-	__unusedFTS5_TOKENIZE_PREFIX                  = 0x0002
-	__unusedFTS5_TOKENIZE_QUERY                   = 0x0001
-	__unusedFTS5_TOKEN_COLOCATED                  = 0x0001
-	__unusedFULLY_WITHIN                          = 2
-	__unusedLITTLE_ENDIAN                         = 1234
-	__unusedL_ctermid                             = 9
-	__unusedL_tmpnam                              = 20
-	__unusedNOT_WITHIN                            = 0
-	__unusedPARTLY_WITHIN                         = 1
-	__unusedPDP_ENDIAN                            = 3412
-	__unusedP_tmpdir                              = "/tmp"
-	__unusedRAND_MAX                              = 2147483647
-	__unusedSEEK_CUR                              = 1
-	__unusedSEEK_END                              = 2
-	__unusedSEEK_SET                              = 0
-	__unusedSQLITE3_H                             = 0
-	__unusedSQLITE3_TEXT                          = 3
-	__unusedSQLITE_ABORT                          = 4
-	__unusedSQLITE_ABORT_ROLLBACK                 = 516
-	__unusedSQLITE_ACCESS_EXISTS                  = 0
-	__unusedSQLITE_ACCESS_READ                    = 2
-	__unusedSQLITE_ACCESS_READWRITE               = 1
-	__unusedSQLITE_ALTER_TABLE                    = 26
-	__unusedSQLITE_ANALYZE                        = 28
-	__unusedSQLITE_ANY                            = 5
-	__unusedSQLITE_API                            = 0
-	__unusedSQLITE_APICALL                        = 0
-	__unusedSQLITE_ATTACH                         = 24
-	__unusedSQLITE_AUTH                           = 23
-	__unusedSQLITE_AUTH_USER                      = 279
-	__unusedSQLITE_BLOB                           = 4
-	__unusedSQLITE_BUSY                           = 5
-	__unusedSQLITE_BUSY_RECOVERY                  = 261
-	__unusedSQLITE_BUSY_SNAPSHOT                  = 517
-	__unusedSQLITE_BUSY_TIMEOUT                   = 773
-	__unusedSQLITE_CALLBACK                       = 0
-	__unusedSQLITE_CANTOPEN                       = 14
-	__unusedSQLITE_CANTOPEN_CONVPATH              = 1038
-	__unusedSQLITE_CANTOPEN_DIRTYWAL              = 1294
-	__unusedSQLITE_CANTOPEN_FULLPATH              = 782
-	__unusedSQLITE_CANTOPEN_ISDIR                 = 526
-	__unusedSQLITE_CANTOPEN_NOTEMPDIR             = 270
-	__unusedSQLITE_CANTOPEN_SYMLINK               = 1550
-	__unusedSQLITE_CDECL                          = 0
-	__unusedSQLITE_CHECKPOINT_FULL                = 1
-	__unusedSQLITE_CHECKPOINT_PASSIVE             = 0
-	__unusedSQLITE_CHECKPOINT_RESTART             = 2
-	__unusedSQLITE_CHECKPOINT_TRUNCATE            = 3
-	__unusedSQLITE_CONFIG_COVERING_INDEX_SCAN     = 20
-	__unusedSQLITE_CONFIG_GETMALLOC               = 5
-	__unusedSQLITE_CONFIG_GETMUTEX                = 11
-	__unusedSQLITE_CONFIG_GETPCACHE               = 15
-	__unusedSQLITE_CONFIG_GETPCACHE2              = 19
-	__unusedSQLITE_CONFIG_HEAP                    = 8
-	__unusedSQLITE_CONFIG_LOG                     = 16
-	__unusedSQLITE_CONFIG_LOOKASIDE               = 13
-	__unusedSQLITE_CONFIG_MALLOC                  = 4
-	__unusedSQLITE_CONFIG_MEMDB_MAXSIZE           = 29
-	__unusedSQLITE_CONFIG_MEMSTATUS               = 9
-	__unusedSQLITE_CONFIG_MMAP_SIZE               = 22
-	__unusedSQLITE_CONFIG_MULTITHREAD             = 2
-	__unusedSQLITE_CONFIG_MUTEX                   = 10
-	__unusedSQLITE_CONFIG_PAGECACHE               = 7
-	__unusedSQLITE_CONFIG_PCACHE                  = 14
-	__unusedSQLITE_CONFIG_PCACHE2                 = 18
-	__unusedSQLITE_CONFIG_PCACHE_HDRSZ            = 24
-	__unusedSQLITE_CONFIG_PMASZ                   = 25
-	__unusedSQLITE_CONFIG_SCRATCH                 = 6
-	__unusedSQLITE_CONFIG_SERIALIZED              = 3
-	__unusedSQLITE_CONFIG_SINGLETHREAD            = 1
-	__unusedSQLITE_CONFIG_SMALL_MALLOC            = 27
-	__unusedSQLITE_CONFIG_SORTERREF_SIZE          = 28
-	__unusedSQLITE_CONFIG_SQLLOG                  = 21
-	__unusedSQLITE_CONFIG_STMTJRNL_SPILL          = 26
-	__unusedSQLITE_CONFIG_URI                     = 17
-	__unusedSQLITE_CONFIG_WIN32_HEAPSIZE          = 23
-	__unusedSQLITE_CONSTRAINT                     = 19
-	__unusedSQLITE_CONSTRAINT_CHECK               = 275
-	__unusedSQLITE_CONSTRAINT_COMMITHOOK          = 531
-	__unusedSQLITE_CONSTRAINT_FOREIGNKEY          = 787
-	__unusedSQLITE_CONSTRAINT_FUNCTION            = 1043
-	__unusedSQLITE_CONSTRAINT_NOTNULL             = 1299
-	__unusedSQLITE_CONSTRAINT_PINNED              = 2835
-	__unusedSQLITE_CONSTRAINT_PRIMARYKEY          = 1555
-	__unusedSQLITE_CONSTRAINT_ROWID               = 2579
-	__unusedSQLITE_CONSTRAINT_TRIGGER             = 1811
-	__unusedSQLITE_CONSTRAINT_UNIQUE              = 2067
-	__unusedSQLITE_CONSTRAINT_VTAB                = 2323
-	__unusedSQLITE_COPY                           = 0
-	__unusedSQLITE_CORRUPT                        = 11
-	__unusedSQLITE_CORRUPT_INDEX                  = 779
-	__unusedSQLITE_CORRUPT_SEQUENCE               = 523
-	__unusedSQLITE_CORRUPT_VTAB                   = 267
-	__unusedSQLITE_CREATE_INDEX                   = 1
-	__unusedSQLITE_CREATE_TABLE                   = 2
-	__unusedSQLITE_CREATE_TEMP_INDEX              = 3
-	__unusedSQLITE_CREATE_TEMP_TABLE              = 4
-	__unusedSQLITE_CREATE_TEMP_TRIGGER            = 5
-	__unusedSQLITE_CREATE_TEMP_VIEW               = 6
-	__unusedSQLITE_CREATE_TRIGGER                 = 7
-	__unusedSQLITE_CREATE_VIEW                    = 8
-	__unusedSQLITE_CREATE_VTABLE                  = 29
-	__unusedSQLITE_DBCONFIG_DEFENSIVE             = 1010
-	__unusedSQLITE_DBCONFIG_DQS_DDL               = 1014
-	__unusedSQLITE_DBCONFIG_DQS_DML               = 1013
-	__unusedSQLITE_DBCONFIG_ENABLE_FKEY           = 1002
-	__unusedSQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
-	__unusedSQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION = 1005
-	__unusedSQLITE_DBCONFIG_ENABLE_QPSG           = 1007
-	__unusedSQLITE_DBCONFIG_ENABLE_TRIGGER        = 1003
-	__unusedSQLITE_DBCONFIG_ENABLE_VIEW           = 1015
-	__unusedSQLITE_DBCONFIG_LEGACY_ALTER_TABLE    = 1012
-	__unusedSQLITE_DBCONFIG_LEGACY_FILE_FORMAT    = 1016
-	__unusedSQLITE_DBCONFIG_LOOKASIDE             = 1001
-	__unusedSQLITE_DBCONFIG_MAINDBNAME            = 1000
-	__unusedSQLITE_DBCONFIG_MAX                   = 1017
-	__unusedSQLITE_DBCONFIG_NO_CKPT_ON_CLOSE      = 1006
-	__unusedSQLITE_DBCONFIG_RESET_DATABASE        = 1009
-	__unusedSQLITE_DBCONFIG_TRIGGER_EQP           = 1008
-	__unusedSQLITE_DBCONFIG_TRUSTED_SCHEMA        = 1017
-	__unusedSQLITE_DBCONFIG_WRITABLE_SCHEMA       = 1011
-	__unusedSQLITE_DBSTATUS_CACHE_HIT             = 7
-	__unusedSQLITE_DBSTATUS_CACHE_MISS            = 8
-	__unusedSQLITE_DBSTATUS_CACHE_SPILL           = 12
-	__unusedSQLITE_DBSTATUS_CACHE_USED            = 1
-	__unusedSQLITE_DBSTATUS_CACHE_USED_SHARED     = 11
-	__unusedSQLITE_DBSTATUS_CACHE_WRITE           = 9
-	__unusedSQLITE_DBSTATUS_DEFERRED_FKS          = 10
-	__unusedSQLITE_DBSTATUS_LOOKASIDE_HIT         = 4
-	__unusedSQLITE_DBSTATUS_LOOKASIDE_MISS_FULL   = 6
-	__unusedSQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE   = 5
-	__unusedSQLITE_DBSTATUS_LOOKASIDE_USED        = 0
-	__unusedSQLITE_DBSTATUS_MAX                   = 12
-	__unusedSQLITE_DBSTATUS_SCHEMA_USED           = 2
-	__unusedSQLITE_DBSTATUS_STMT_USED             = 3
-	__unusedSQLITE_DELETE                         = 9
-	__unusedSQLITE_DENY                           = 1
-	__unusedSQLITE_DEPRECATED                     = 0
-	__unusedSQLITE_DESERIALIZE_FREEONCLOSE        = 1
-	__unusedSQLITE_DESERIALIZE_READONLY           = 4
-	__unusedSQLITE_DESERIALIZE_RESIZEABLE         = 2
-	__unusedSQLITE_DETACH                         = 25
-	__unusedSQLITE_DETERMINISTIC                  = 0x000000800
-	__unusedSQLITE_DIRECTONLY                     = 0x000080000
-	__unusedSQLITE_DONE                           = 101
-	__unusedSQLITE_DROP_INDEX                     = 10
-	__unusedSQLITE_DROP_TABLE                     = 11
-	__unusedSQLITE_DROP_TEMP_INDEX                = 12
-	__unusedSQLITE_DROP_TEMP_TABLE                = 13
-	__unusedSQLITE_DROP_TEMP_TRIGGER              = 14
-	__unusedSQLITE_DROP_TEMP_VIEW                 = 15
-	__unusedSQLITE_DROP_TRIGGER                   = 16
-	__unusedSQLITE_DROP_VIEW                      = 17
-	__unusedSQLITE_DROP_VTABLE                    = 30
-	__unusedSQLITE_EMPTY                          = 16
-	__unusedSQLITE_ERROR                          = 1
-	__unusedSQLITE_ERROR_MISSING_COLLSEQ          = 257
-	__unusedSQLITE_ERROR_RETRY                    = 513
-	__unusedSQLITE_ERROR_SNAPSHOT                 = 769
-	__unusedSQLITE_EXPERIMENTAL                   = 0
-	__unusedSQLITE_FAIL                           = 3
-	__unusedSQLITE_FCNTL_BEGIN_ATOMIC_WRITE       = 31
-	__unusedSQLITE_FCNTL_BUSYHANDLER              = 15
-	__unusedSQLITE_FCNTL_CHUNK_SIZE               = 6
-	__unusedSQLITE_FCNTL_CKPT_DONE                = 37
-	__unusedSQLITE_FCNTL_CKPT_START               = 39
-	__unusedSQLITE_FCNTL_COMMIT_ATOMIC_WRITE      = 32
-	__unusedSQLITE_FCNTL_COMMIT_PHASETWO          = 22
-	__unusedSQLITE_FCNTL_DATA_VERSION             = 35
-	__unusedSQLITE_FCNTL_FILE_POINTER             = 7
-	__unusedSQLITE_FCNTL_GET_LOCKPROXYFILE        = 2
-	__unusedSQLITE_FCNTL_HAS_MOVED                = 20
-	__unusedSQLITE_FCNTL_JOURNAL_POINTER          = 28
-	__unusedSQLITE_FCNTL_LAST_ERRNO               = 4
-	__unusedSQLITE_FCNTL_LOCKSTATE                = 1
-	__unusedSQLITE_FCNTL_LOCK_TIMEOUT             = 34
-	__unusedSQLITE_FCNTL_MMAP_SIZE                = 18
-	__unusedSQLITE_FCNTL_OVERWRITE                = 11
-	__unusedSQLITE_FCNTL_PDB                      = 30
-	__unusedSQLITE_FCNTL_PERSIST_WAL              = 10
-	__unusedSQLITE_FCNTL_POWERSAFE_OVERWRITE      = 13
-	__unusedSQLITE_FCNTL_PRAGMA                   = 14
-	__unusedSQLITE_FCNTL_RBU                      = 26
-	__unusedSQLITE_FCNTL_RESERVE_BYTES            = 38
-	__unusedSQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE    = 33
-	__unusedSQLITE_FCNTL_SET_LOCKPROXYFILE        = 3
-	__unusedSQLITE_FCNTL_SIZE_HINT                = 5
-	__unusedSQLITE_FCNTL_SIZE_LIMIT               = 36
-	__unusedSQLITE_FCNTL_SYNC                     = 21
-	__unusedSQLITE_FCNTL_SYNC_OMITTED             = 8
-	__unusedSQLITE_FCNTL_TEMPFILENAME             = 16
-	__unusedSQLITE_FCNTL_TRACE                    = 19
-	__unusedSQLITE_FCNTL_VFSNAME                  = 12
-	__unusedSQLITE_FCNTL_VFS_POINTER              = 27
-	__unusedSQLITE_FCNTL_WAL_BLOCK                = 24
-	__unusedSQLITE_FCNTL_WIN32_AV_RETRY           = 9
-	__unusedSQLITE_FCNTL_WIN32_GET_HANDLE         = 29
-	__unusedSQLITE_FCNTL_WIN32_SET_HANDLE         = 23
-	__unusedSQLITE_FCNTL_ZIPVFS                   = 25
-	__unusedSQLITE_FLOAT                          = 2
-	__unusedSQLITE_FORMAT                         = 24
-	__unusedSQLITE_FULL                           = 13
-	__unusedSQLITE_FUNCTION                       = 31
-	__unusedSQLITE_GET_LOCKPROXYFILE              = 2
-	__unusedSQLITE_IGNORE                         = 2
-	__unusedSQLITE_INDEX_CONSTRAINT_EQ            = 2
-	__unusedSQLITE_INDEX_CONSTRAINT_FUNCTION      = 150
-	__unusedSQLITE_INDEX_CONSTRAINT_GE            = 32
-	__unusedSQLITE_INDEX_CONSTRAINT_GLOB          = 66
-	__unusedSQLITE_INDEX_CONSTRAINT_GT            = 4
-	__unusedSQLITE_INDEX_CONSTRAINT_IS            = 72
-	__unusedSQLITE_INDEX_CONSTRAINT_ISNOT         = 69
-	__unusedSQLITE_INDEX_CONSTRAINT_ISNOTNULL     = 70
-	__unusedSQLITE_INDEX_CONSTRAINT_ISNULL        = 71
-	__unusedSQLITE_INDEX_CONSTRAINT_LE            = 8
-	__unusedSQLITE_INDEX_CONSTRAINT_LIKE          = 65
-	__unusedSQLITE_INDEX_CONSTRAINT_LT            = 16
-	__unusedSQLITE_INDEX_CONSTRAINT_MATCH         = 64
-	__unusedSQLITE_INDEX_CONSTRAINT_NE            = 68
-	__unusedSQLITE_INDEX_CONSTRAINT_REGEXP        = 67
-	__unusedSQLITE_INDEX_SCAN_UNIQUE              = 1
-	__unusedSQLITE_INNOCUOUS                      = 0x000200000
-	__unusedSQLITE_INSERT                         = 18
-	__unusedSQLITE_INTEGER                        = 1
-	__unusedSQLITE_INTERNAL                       = 2
-	__unusedSQLITE_INTERRUPT                      = 9
-	__unusedSQLITE_IOCAP_ATOMIC                   = 0x00000001
-	__unusedSQLITE_IOCAP_ATOMIC16K                = 0x00000040
-	__unusedSQLITE_IOCAP_ATOMIC1K                 = 0x00000004
-	__unusedSQLITE_IOCAP_ATOMIC2K                 = 0x00000008
-	__unusedSQLITE_IOCAP_ATOMIC32K                = 0x00000080
-	__unusedSQLITE_IOCAP_ATOMIC4K                 = 0x00000010
-	__unusedSQLITE_IOCAP_ATOMIC512                = 0x00000002
-	__unusedSQLITE_IOCAP_ATOMIC64K                = 0x00000100
-	__unusedSQLITE_IOCAP_ATOMIC8K                 = 0x00000020
-	__unusedSQLITE_IOCAP_BATCH_ATOMIC             = 0x00004000
-	__unusedSQLITE_IOCAP_IMMUTABLE                = 0x00002000
-	__unusedSQLITE_IOCAP_POWERSAFE_OVERWRITE      = 0x00001000
-	__unusedSQLITE_IOCAP_SAFE_APPEND              = 0x00000200
-	__unusedSQLITE_IOCAP_SEQUENTIAL               = 0x00000400
-	__unusedSQLITE_IOCAP_UNDELETABLE_WHEN_OPEN    = 0x00000800
-	__unusedSQLITE_IOERR                          = 10
-	__unusedSQLITE_IOERR_ACCESS                   = 3338
-	__unusedSQLITE_IOERR_AUTH                     = 7178
-	__unusedSQLITE_IOERR_BEGIN_ATOMIC             = 7434
-	__unusedSQLITE_IOERR_BLOCKED                  = 2826
-	__unusedSQLITE_IOERR_CHECKRESERVEDLOCK        = 3594
-	__unusedSQLITE_IOERR_CLOSE                    = 4106
-	__unusedSQLITE_IOERR_COMMIT_ATOMIC            = 7690
-	__unusedSQLITE_IOERR_CONVPATH                 = 6666
-	__unusedSQLITE_IOERR_CORRUPTFS                = 8458
-	__unusedSQLITE_IOERR_DATA                     = 8202
-	__unusedSQLITE_IOERR_DELETE                   = 2570
-	__unusedSQLITE_IOERR_DELETE_NOENT             = 5898
-	__unusedSQLITE_IOERR_DIR_CLOSE                = 4362
-	__unusedSQLITE_IOERR_DIR_FSYNC                = 1290
-	__unusedSQLITE_IOERR_FSTAT                    = 1802
-	__unusedSQLITE_IOERR_FSYNC                    = 1034
-	__unusedSQLITE_IOERR_GETTEMPPATH              = 6410
-	__unusedSQLITE_IOERR_LOCK                     = 3850
-	__unusedSQLITE_IOERR_MMAP                     = 6154
-	__unusedSQLITE_IOERR_NOMEM                    = 3082
-	__unusedSQLITE_IOERR_RDLOCK                   = 2314
-	__unusedSQLITE_IOERR_READ                     = 266
-	__unusedSQLITE_IOERR_ROLLBACK_ATOMIC          = 7946
-	__unusedSQLITE_IOERR_SEEK                     = 5642
-	__unusedSQLITE_IOERR_SHMLOCK                  = 5130
-	__unusedSQLITE_IOERR_SHMMAP                   = 5386
-	__unusedSQLITE_IOERR_SHMOPEN                  = 4618
-	__unusedSQLITE_IOERR_SHMSIZE                  = 4874
-	__unusedSQLITE_IOERR_SHORT_READ               = 522
-	__unusedSQLITE_IOERR_TRUNCATE                 = 1546
-	__unusedSQLITE_IOERR_UNLOCK                   = 2058
-	__unusedSQLITE_IOERR_VNODE                    = 6922
-	__unusedSQLITE_IOERR_WRITE                    = 778
-	__unusedSQLITE_LAST_ERRNO                     = 4
-	__unusedSQLITE_LIMIT_ATTACHED                 = 7
-	__unusedSQLITE_LIMIT_COLUMN                   = 2
-	__unusedSQLITE_LIMIT_COMPOUND_SELECT          = 4
-	__unusedSQLITE_LIMIT_EXPR_DEPTH               = 3
-	__unusedSQLITE_LIMIT_FUNCTION_ARG             = 6
-	__unusedSQLITE_LIMIT_LENGTH                   = 0
-	__unusedSQLITE_LIMIT_LIKE_PATTERN_LENGTH      = 8
-	__unusedSQLITE_LIMIT_SQL_LENGTH               = 1
-	__unusedSQLITE_LIMIT_TRIGGER_DEPTH            = 10
-	__unusedSQLITE_LIMIT_VARIABLE_NUMBER          = 9
-	__unusedSQLITE_LIMIT_VDBE_OP                  = 5
-	__unusedSQLITE_LIMIT_WORKER_THREADS           = 11
-	__unusedSQLITE_LOCKED                         = 6
-	__unusedSQLITE_LOCKED_SHAREDCACHE             = 262
-	__unusedSQLITE_LOCKED_VTAB                    = 518
-	__unusedSQLITE_LOCK_EXCLUSIVE                 = 4
-	__unusedSQLITE_LOCK_NONE                      = 0
-	__unusedSQLITE_LOCK_PENDING                   = 3
-	__unusedSQLITE_LOCK_RESERVED                  = 2
-	__unusedSQLITE_LOCK_SHARED                    = 1
-	__unusedSQLITE_MISMATCH                       = 20
-	__unusedSQLITE_MISUSE                         = 21
-	__unusedSQLITE_MUTEX_FAST                     = 0
-	__unusedSQLITE_MUTEX_RECURSIVE                = 1
-	__unusedSQLITE_MUTEX_STATIC_APP1              = 8
-	__unusedSQLITE_MUTEX_STATIC_APP2              = 9
-	__unusedSQLITE_MUTEX_STATIC_APP3              = 10
-	__unusedSQLITE_MUTEX_STATIC_LRU               = 6
-	__unusedSQLITE_MUTEX_STATIC_LRU2              = 7
-	__unusedSQLITE_MUTEX_STATIC_MAIN              = 2
-	__unusedSQLITE_MUTEX_STATIC_MASTER            = 2
-	__unusedSQLITE_MUTEX_STATIC_MEM               = 3
-	__unusedSQLITE_MUTEX_STATIC_MEM2              = 4
-	__unusedSQLITE_MUTEX_STATIC_OPEN              = 4
-	__unusedSQLITE_MUTEX_STATIC_PMEM              = 7
-	__unusedSQLITE_MUTEX_STATIC_PRNG              = 5
-	__unusedSQLITE_MUTEX_STATIC_VFS1              = 11
-	__unusedSQLITE_MUTEX_STATIC_VFS2              = 12
-	__unusedSQLITE_MUTEX_STATIC_VFS3              = 13
-	__unusedSQLITE_NOLFS                          = 22
-	__unusedSQLITE_NOMEM                          = 7
-	__unusedSQLITE_NOTADB                         = 26
-	__unusedSQLITE_NOTFOUND                       = 12
-	__unusedSQLITE_NOTICE                         = 27
-	__unusedSQLITE_NOTICE_RECOVER_ROLLBACK        = 539
-	__unusedSQLITE_NOTICE_RECOVER_WAL             = 283
-	__unusedSQLITE_NULL                           = 5
-	__unusedSQLITE_OK                             = 0
-	__unusedSQLITE_OK_LOAD_PERMANENTLY            = 256
-	__unusedSQLITE_OK_SYMLINK                     = 512
-	__unusedSQLITE_OPEN_AUTOPROXY                 = 0x00000020
-	__unusedSQLITE_OPEN_CREATE                    = 0x00000004
-	__unusedSQLITE_OPEN_DELETEONCLOSE             = 0x00000008
-	__unusedSQLITE_OPEN_EXCLUSIVE                 = 0x00000010
-	__unusedSQLITE_OPEN_FULLMUTEX                 = 0x00010000
-	__unusedSQLITE_OPEN_MAIN_DB                   = 0x00000100
-	__unusedSQLITE_OPEN_MAIN_JOURNAL              = 0x00000800
-	__unusedSQLITE_OPEN_MASTER_JOURNAL            = 0x00004000
-	__unusedSQLITE_OPEN_MEMORY                    = 0x00000080
-	__unusedSQLITE_OPEN_NOFOLLOW                  = 0x01000000
-	__unusedSQLITE_OPEN_NOMUTEX                   = 0x00008000
-	__unusedSQLITE_OPEN_PRIVATECACHE              = 0x00040000
-	__unusedSQLITE_OPEN_READONLY                  = 0x00000001
-	__unusedSQLITE_OPEN_READWRITE                 = 0x00000002
-	__unusedSQLITE_OPEN_SHAREDCACHE               = 0x00020000
-	__unusedSQLITE_OPEN_SUBJOURNAL                = 0x00002000
-	__unusedSQLITE_OPEN_SUPER_JOURNAL             = 0x00004000
-	__unusedSQLITE_OPEN_TEMP_DB                   = 0x00000200
-	__unusedSQLITE_OPEN_TEMP_JOURNAL              = 0x00001000
-	__unusedSQLITE_OPEN_TRANSIENT_DB              = 0x00000400
-	__unusedSQLITE_OPEN_URI                       = 0x00000040
-	__unusedSQLITE_OPEN_WAL                       = 0x00080000
-	__unusedSQLITE_PERM                           = 3
-	__unusedSQLITE_PRAGMA                         = 19
-	__unusedSQLITE_PREPARE_NORMALIZE              = 0x02
-	__unusedSQLITE_PREPARE_NO_VTAB                = 0x04
-	__unusedSQLITE_PREPARE_PERSISTENT             = 0x01
-	__unusedSQLITE_PROTOCOL                       = 15
-	__unusedSQLITE_RANGE                          = 25
-	__unusedSQLITE_READ                           = 20
-	__unusedSQLITE_READONLY                       = 8
-	__unusedSQLITE_READONLY_CANTINIT              = 1288
-	__unusedSQLITE_READONLY_CANTLOCK              = 520
-	__unusedSQLITE_READONLY_DBMOVED               = 1032
-	__unusedSQLITE_READONLY_DIRECTORY             = 1544
-	__unusedSQLITE_READONLY_RECOVERY              = 264
-	__unusedSQLITE_READONLY_ROLLBACK              = 776
-	__unusedSQLITE_RECURSIVE                      = 33
-	__unusedSQLITE_REINDEX                        = 27
-	__unusedSQLITE_REPLACE                        = 5
-	__unusedSQLITE_ROLLBACK                       = 1
-	__unusedSQLITE_ROW                            = 100
-	__unusedSQLITE_SAVEPOINT                      = 32
-	__unusedSQLITE_SCANSTAT_EST                   = 2
-	__unusedSQLITE_SCANSTAT_EXPLAIN               = 4
-	__unusedSQLITE_SCANSTAT_NAME                  = 3
-	__unusedSQLITE_SCANSTAT_NLOOP                 = 0
-	__unusedSQLITE_SCANSTAT_NVISIT                = 1
-	__unusedSQLITE_SCANSTAT_SELECTID              = 5
-	__unusedSQLITE_SCHEMA                         = 17
-	__unusedSQLITE_SELECT                         = 21
-	__unusedSQLITE_SERIALIZE_NOCOPY               = 0x001
-	__unusedSQLITE_SET_LOCKPROXYFILE              = 3
-	__unusedSQLITE_SHM_EXCLUSIVE                  = 8
-	__unusedSQLITE_SHM_LOCK                       = 2
-	__unusedSQLITE_SHM_NLOCK                      = 8
-	__unusedSQLITE_SHM_SHARED                     = 4
-	__unusedSQLITE_SHM_UNLOCK                     = 1
-	__unusedSQLITE_SOURCE_ID                      = "2020-12-01 16:14:00 a26b6597e3ae272231b96f9982c3bcc17ddec2f2b6eb4df06a224b91089fed5b"
-	__unusedSQLITE_STATUS_MALLOC_COUNT            = 9
-	__unusedSQLITE_STATUS_MALLOC_SIZE             = 5
-	__unusedSQLITE_STATUS_MEMORY_USED             = 0
-	__unusedSQLITE_STATUS_PAGECACHE_OVERFLOW      = 2
-	__unusedSQLITE_STATUS_PAGECACHE_SIZE          = 7
-	__unusedSQLITE_STATUS_PAGECACHE_USED          = 1
-	__unusedSQLITE_STATUS_PARSER_STACK            = 6
-	__unusedSQLITE_STATUS_SCRATCH_OVERFLOW        = 4
-	__unusedSQLITE_STATUS_SCRATCH_SIZE            = 8
-	__unusedSQLITE_STATUS_SCRATCH_USED            = 3
-	__unusedSQLITE_STDCALL                        = 0
-	__unusedSQLITE_STMTSTATUS_AUTOINDEX           = 3
-	__unusedSQLITE_STMTSTATUS_FULLSCAN_STEP       = 1
-	__unusedSQLITE_STMTSTATUS_MEMUSED             = 99
-	__unusedSQLITE_STMTSTATUS_REPREPARE           = 5
-	__unusedSQLITE_STMTSTATUS_RUN                 = 6
-	__unusedSQLITE_STMTSTATUS_SORT                = 2
-	__unusedSQLITE_STMTSTATUS_VM_STEP             = 4
-	__unusedSQLITE_SUBTYPE                        = 0x000100000
-	__unusedSQLITE_SYNC_DATAONLY                  = 0x00010
-	__unusedSQLITE_SYNC_FULL                      = 0x00003
-	__unusedSQLITE_SYNC_NORMAL                    = 0x00002
-	__unusedSQLITE_SYSAPI                         = 0
-	__unusedSQLITE_TESTCTRL_ALWAYS                = 13
-	__unusedSQLITE_TESTCTRL_ASSERT                = 12
-	__unusedSQLITE_TESTCTRL_BENIGN_MALLOC_HOOKS   = 10
-	__unusedSQLITE_TESTCTRL_BITVEC_TEST           = 8
-	__unusedSQLITE_TESTCTRL_BYTEORDER             = 22
-	__unusedSQLITE_TESTCTRL_EXPLAIN_STMT          = 19
-	__unusedSQLITE_TESTCTRL_EXTRA_SCHEMA_CHECKS   = 29
-	__unusedSQLITE_TESTCTRL_FAULT_INSTALL         = 9
-	__unusedSQLITE_TESTCTRL_FIRST                 = 5
-	__unusedSQLITE_TESTCTRL_IMPOSTER              = 25
-	__unusedSQLITE_TESTCTRL_INTERNAL_FUNCTIONS    = 17
-	__unusedSQLITE_TESTCTRL_ISINIT                = 23
-	__unusedSQLITE_TESTCTRL_ISKEYWORD             = 16
-	__unusedSQLITE_TESTCTRL_LAST                  = 30
-	__unusedSQLITE_TESTCTRL_LOCALTIME_FAULT       = 18
-	__unusedSQLITE_TESTCTRL_NEVER_CORRUPT         = 20
-	__unusedSQLITE_TESTCTRL_ONCE_RESET_THRESHOLD  = 19
-	__unusedSQLITE_TESTCTRL_OPTIMIZATIONS         = 15
-	__unusedSQLITE_TESTCTRL_PARSER_COVERAGE       = 26
-	__unusedSQLITE_TESTCTRL_PENDING_BYTE          = 11
-	__unusedSQLITE_TESTCTRL_PRNG_RESET            = 7
-	__unusedSQLITE_TESTCTRL_PRNG_RESTORE          = 6
-	__unusedSQLITE_TESTCTRL_PRNG_SAVE             = 5
-	__unusedSQLITE_TESTCTRL_PRNG_SEED             = 28
-	__unusedSQLITE_TESTCTRL_RESERVE               = 14
-	__unusedSQLITE_TESTCTRL_RESULT_INTREAL        = 27
-	__unusedSQLITE_TESTCTRL_SCRATCHMALLOC         = 17
-	__unusedSQLITE_TESTCTRL_SEEK_COUNT            = 30
-	__unusedSQLITE_TESTCTRL_SORTER_MMAP           = 24
-	__unusedSQLITE_TESTCTRL_VDBE_COVERAGE         = 21
-	__unusedSQLITE_TEXT                           = 3
-	__unusedSQLITE_TOOBIG                         = 18
-	__unusedSQLITE_TRACE_CLOSE                    = 0x08
-	__unusedSQLITE_TRACE_PROFILE                  = 0x02
-	__unusedSQLITE_TRACE_ROW                      = 0x04
-	__unusedSQLITE_TRACE_STMT                     = 0x01
-	__unusedSQLITE_TRANSACTION                    = 22
-	__unusedSQLITE_TXN_NONE                       = 0
-	__unusedSQLITE_TXN_READ                       = 1
-	__unusedSQLITE_TXN_WRITE                      = 2
-	__unusedSQLITE_UPDATE                         = 23
-	__unusedSQLITE_UTF16                          = 4
-	__unusedSQLITE_UTF16BE                        = 3
-	__unusedSQLITE_UTF16LE                        = 2
-	__unusedSQLITE_UTF16_ALIGNED                  = 8
-	__unusedSQLITE_UTF8                           = 1
-	__unusedSQLITE_VERSION                        = "3.34.0"
-	__unusedSQLITE_VERSION_NUMBER                 = 3034000
-	__unusedSQLITE_VTAB_CONSTRAINT_SUPPORT        = 1
-	__unusedSQLITE_VTAB_DIRECTONLY                = 3
-	__unusedSQLITE_VTAB_INNOCUOUS                 = 2
-	__unusedSQLITE_WARNING                        = 28
-	__unusedSQLITE_WARNING_AUTOINDEX              = 284
-	__unusedSQLITE_WIN32_DATA_DIRECTORY_TYPE      = 1
-	__unusedSQLITE_WIN32_TEMP_DIRECTORY_TYPE      = 2
-	__unusedTMP_MAX                               = 238328
-	__unusedWCONTINUED                            = 8
-	__unusedWEXITED                               = 4
-	__unusedWNOHANG                               = 1
-	__unusedWNOWAIT                               = 0x01000000
-	__unusedWSTOPPED                              = 2
-	__unusedWUNTRACED                             = 2
-	__unused_ALLOCA_H                             = 1
-	__unused_ANSI_STDARG_H_                       = 0
-	__unused_ATFILE_SOURCE                        = 1
-	__unused_BITS_BYTESWAP_H                      = 1
-	__unused_BITS_ENDIANNESS_H                    = 1
-	__unused_BITS_ENDIAN_H                        = 1
-	__unused_BITS_FLOATN_COMMON_H                 = 0
-	__unused_BITS_FLOATN_H                        = 0
-	__unused_BITS_PTHREADTYPES_ARCH_H             = 1
-	__unused_BITS_PTHREADTYPES_COMMON_H           = 1
-	__unused_BITS_STDINT_INTN_H                   = 1
-	__unused_BITS_STDIO_LIM_H                     = 1
-	__unused_BITS_TIME64_H                        = 1
-	__unused_BITS_TYPESIZES_H                     = 1
-	__unused_BITS_TYPES_H                         = 1
-	__unused_BITS_TYPES_LOCALE_T_H                = 1
-	__unused_BITS_TYPES___LOCALE_T_H              = 1
-	__unused_BITS_UINTN_IDENTITY_H                = 1
-	__unused_BSD_SIZE_T_                          = 0
-	__unused_BSD_SIZE_T_DEFINED_                  = 0
-	__unused_DEFAULT_SOURCE                       = 1
-	__unused_ENDIAN_H                             = 1
-	__unused_FEATURES_H                           = 1
-	__unused_FILE_OFFSET_BITS                     = 64
-	__unused_FTS5_H                               = 0
-	__unused_GCC_SIZE_T                           = 0
-	__unused_GCC_WCHAR_T                          = 0
-	__unused_IOFBF                                = 0
-	__unused_IOLBF                                = 1
-	__unused_IONBF                                = 2
-	__unused_IO_EOF_SEEN                          = 0x0010
-	__unused_IO_ERR_SEEN                          = 0x0020
-	__unused_IO_USER_LOCK                         = 0x8000
-	__unused_LP64                                 = 1
-	__unused_POSIX_C_SOURCE                       = 200809
-	__unused_POSIX_SOURCE                         = 1
-	__unused_RWLOCK_INTERNAL_H                    = 0
-	__unused_SIZET_                               = 0
-	__unused_SIZE_T                               = 0
-	__unused_SIZE_T_                              = 0
-	__unused_SIZE_T_DECLARED                      = 0
-	__unused_SIZE_T_DEFINED                       = 0
-	__unused_SIZE_T_DEFINED_                      = 0
-	__unused_SQLITE3RTREE_H_                      = 0
-	__unused_STDARG_H                             = 0
-	__unused_STDC_PREDEF_H                        = 1
-	__unused_STDIO_H                              = 1
-	__unused_STDLIB_H                             = 1
-	__unused_STRINGS_H                            = 1
-	__unused_STRING_H                             = 1
-	__unused_STRUCT_TIMESPEC                      = 1
-	__unused_SYS_CDEFS_H                          = 1
-	__unused_SYS_SELECT_H                         = 1
-	__unused_SYS_SIZE_T_H                         = 0
-	__unused_SYS_TYPES_H                          = 1
-	__unused_THREAD_MUTEX_INTERNAL_H              = 1
-	__unused_THREAD_SHARED_TYPES_H                = 1
-	__unused_T_SIZE                               = 0
-	__unused_T_SIZE_                              = 0
-	__unused_T_WCHAR                              = 0
-	__unused_T_WCHAR_                             = 0
-	__unused_VA_LIST                              = 0
-	__unused_VA_LIST_                             = 0
-	__unused_VA_LIST_DEFINED                      = 0
-	__unused_VA_LIST_T_H                          = 0
-	__unused_WCHAR_T                              = 0
-	__unused_WCHAR_T_                             = 0
-	__unused_WCHAR_T_DECLARED                     = 0
-	__unused_WCHAR_T_DEFINED                      = 0
-	__unused_WCHAR_T_DEFINED_                     = 0
-	__unused_WCHAR_T_H                            = 0
-	__unusedlinux                                 = 1
-	__unusedunix                                  = 1
-)
+type ptrdiff_t = int64 /* <builtin>:3:26 */
 
-type __unusedptrdiff_t = int64 /* <builtin>:3:26 */
+type size_t = uint64 /* <builtin>:9:23 */
 
-type __unusedsize_t = uint64 /* <builtin>:9:23 */
+type wchar_t = int32 /* <builtin>:15:24 */
 
-type __unusedwchar_t = int32 /* <builtin>:15:24 */
+type __int128_t = [2]int64   /* <builtin>:21:24 */ //TODO
+type __uint128_t = [2]uint64 /* <builtin>:22:25 */ //TODO
 
-type __unused__int128_t = [2]int64   /* <builtin>:21:24 */ //TODO
-type __unused__uint128_t = [2]uint64 /* <builtin>:22:25 */ //TODO
-
-type __unused__builtin_va_list = uintptr /* <builtin>:47:14 */
-type __unused__float128 = float64        /* <builtin>:48:21 */
+type __builtin_va_list = uintptr /* <builtin>:47:14 */
+type __float128 = float64        /* <builtin>:48:21 */
 
 // A null pointer constant.
 
@@ -830,21 +273,21 @@ type __unused__float128 = float64        /* <builtin>:48:21 */
 //    double.
 
 // Returned by `div'.
-type __unuseddiv_t = struct {
-	__unusedquot int32
-	__unusedrem  int32
+type div_t = struct {
+	quot int32
+	rem  int32
 } /* stdlib.h:62:5 */
 
 // Returned by `ldiv'.
-type __unusedldiv_t = struct {
-	__unusedquot int64
-	__unusedrem  int64
+type ldiv_t = struct {
+	quot int64
+	rem  int64
 } /* stdlib.h:70:5 */
 
 // Returned by `lldiv'.
-type __unusedlldiv_t = struct {
-	__unusedquot int64
-	__unusedrem  int64
+type lldiv_t = struct {
+	quot int64
+	rem  int64
 } /* stdlib.h:80:5 */
 
 // Copyright (C) 1991-2020 Free Software Foundation, Inc.
@@ -944,38 +387,38 @@ type __unusedlldiv_t = struct {
 // For others, time size is word size.
 
 // Convenience types.
-type __unused__u_char = uint8   /* types.h:31:23 */
-type __unused__u_short = uint16 /* types.h:32:28 */
-type __unused__u_int = uint32   /* types.h:33:22 */
-type __unused__u_long = uint64  /* types.h:34:27 */
+type __u_char = uint8   /* types.h:31:23 */
+type __u_short = uint16 /* types.h:32:28 */
+type __u_int = uint32   /* types.h:33:22 */
+type __u_long = uint64  /* types.h:34:27 */
 
 // Fixed-size types, underlying types depend on word size and compiler.
-type __unused__int8_t = int8     /* types.h:37:21 */
-type __unused__uint8_t = uint8   /* types.h:38:23 */
-type __unused__int16_t = int16   /* types.h:39:26 */
-type __unused__uint16_t = uint16 /* types.h:40:28 */
-type __unused__int32_t = int32   /* types.h:41:20 */
-type __unused__uint32_t = uint32 /* types.h:42:22 */
-type __unused__int64_t = int64   /* types.h:44:25 */
-type __unused__uint64_t = uint64 /* types.h:45:27 */
+type __int8_t = int8     /* types.h:37:21 */
+type __uint8_t = uint8   /* types.h:38:23 */
+type __int16_t = int16   /* types.h:39:26 */
+type __uint16_t = uint16 /* types.h:40:28 */
+type __int32_t = int32   /* types.h:41:20 */
+type __uint32_t = uint32 /* types.h:42:22 */
+type __int64_t = int64   /* types.h:44:25 */
+type __uint64_t = uint64 /* types.h:45:27 */
 
 // Smallest types with at least a given width.
-type __unused__int_least8_t = __unused__int8_t     /* types.h:52:18 */
-type __unused__uint_least8_t = __unused__uint8_t   /* types.h:53:19 */
-type __unused__int_least16_t = __unused__int16_t   /* types.h:54:19 */
-type __unused__uint_least16_t = __unused__uint16_t /* types.h:55:20 */
-type __unused__int_least32_t = __unused__int32_t   /* types.h:56:19 */
-type __unused__uint_least32_t = __unused__uint32_t /* types.h:57:20 */
-type __unused__int_least64_t = __unused__int64_t   /* types.h:58:19 */
-type __unused__uint_least64_t = __unused__uint64_t /* types.h:59:20 */
+type __int_least8_t = __int8_t     /* types.h:52:18 */
+type __uint_least8_t = __uint8_t   /* types.h:53:19 */
+type __int_least16_t = __int16_t   /* types.h:54:19 */
+type __uint_least16_t = __uint16_t /* types.h:55:20 */
+type __int_least32_t = __int32_t   /* types.h:56:19 */
+type __uint_least32_t = __uint32_t /* types.h:57:20 */
+type __int_least64_t = __int64_t   /* types.h:58:19 */
+type __uint_least64_t = __uint64_t /* types.h:59:20 */
 
 // quad_t is also 64 bits.
-type __unused__quad_t = int64    /* types.h:63:18 */
-type __unused__u_quad_t = uint64 /* types.h:64:27 */
+type __quad_t = int64    /* types.h:63:18 */
+type __u_quad_t = uint64 /* types.h:64:27 */
 
 // Largest integral types.
-type __unused__intmax_t = int64   /* types.h:72:18 */
-type __unused__uintmax_t = uint64 /* types.h:73:27 */
+type __intmax_t = int64   /* types.h:72:18 */
+type __uintmax_t = uint64 /* types.h:73:27 */
 
 // The machine-dependent file <bits/typesizes.h> defines __*_T_TYPE
 //    macros for each of the OS types we define below.  The definitions
@@ -1066,115 +509,115 @@ type __unused__uintmax_t = uint64 /* types.h:73:27 */
 
 // If we already have 64-bit time type then use it.
 
-type __unused__dev_t = uint64                            /* types.h:145:25 */ // Type of device numbers.
-type __unused__uid_t = uint32                            /* types.h:146:25 */ // Type of user identifications.
-type __unused__gid_t = uint32                            /* types.h:147:25 */ // Type of group identifications.
-type __unused__ino_t = uint64                            /* types.h:148:25 */ // Type of file serial numbers.
-type __unused__ino64_t = uint64                          /* types.h:149:27 */ // Type of file serial numbers (LFS).
-type __unused__mode_t = uint32                           /* types.h:150:26 */ // Type of file attribute bitmasks.
-type __unused__nlink_t = uint64                          /* types.h:151:27 */ // Type of file link counts.
-type __unused__off_t = int64                             /* types.h:152:25 */ // Type of file sizes and offsets.
-type __unused__off64_t = int64                           /* types.h:153:27 */ // Type of file sizes and offsets (LFS).
-type __unused__pid_t = int32                             /* types.h:154:25 */ // Type of process identifications.
-type __unused__fsid_t = struct{ __unused__val [2]int32 } /* types.h:155:26 */ // Type of file system IDs.
-type __unused__clock_t = int64                           /* types.h:156:27 */ // Type of CPU usage counts.
-type __unused__rlim_t = uint64                           /* types.h:157:26 */ // Type for resource measurement.
-type __unused__rlim64_t = uint64                         /* types.h:158:28 */ // Type for resource measurement (LFS).
-type __unused__id_t = uint32                             /* types.h:159:24 */ // General type for IDs.
-type __unused__time_t = int64                            /* types.h:160:26 */ // Seconds since the Epoch.
-type __unused__useconds_t = uint32                       /* types.h:161:30 */ // Count of microseconds.
-type __unused__suseconds_t = int64                       /* types.h:162:31 */ // Signed count of microseconds.
-type __unused__suseconds64_t = int64                     /* types.h:163:33 */
+type __dev_t = uint64                    /* types.h:145:25 */ // Type of device numbers.
+type __uid_t = uint32                    /* types.h:146:25 */ // Type of user identifications.
+type __gid_t = uint32                    /* types.h:147:25 */ // Type of group identifications.
+type __ino_t = uint64                    /* types.h:148:25 */ // Type of file serial numbers.
+type __ino64_t = uint64                  /* types.h:149:27 */ // Type of file serial numbers (LFS).
+type __mode_t = uint32                   /* types.h:150:26 */ // Type of file attribute bitmasks.
+type __nlink_t = uint64                  /* types.h:151:27 */ // Type of file link counts.
+type __off_t = int64                     /* types.h:152:25 */ // Type of file sizes and offsets.
+type __off64_t = int64                   /* types.h:153:27 */ // Type of file sizes and offsets (LFS).
+type __pid_t = int32                     /* types.h:154:25 */ // Type of process identifications.
+type __fsid_t = struct{ __val [2]int32 } /* types.h:155:26 */ // Type of file system IDs.
+type __clock_t = int64                   /* types.h:156:27 */ // Type of CPU usage counts.
+type __rlim_t = uint64                   /* types.h:157:26 */ // Type for resource measurement.
+type __rlim64_t = uint64                 /* types.h:158:28 */ // Type for resource measurement (LFS).
+type __id_t = uint32                     /* types.h:159:24 */ // General type for IDs.
+type __time_t = int64                    /* types.h:160:26 */ // Seconds since the Epoch.
+type __useconds_t = uint32               /* types.h:161:30 */ // Count of microseconds.
+type __suseconds_t = int64               /* types.h:162:31 */ // Signed count of microseconds.
+type __suseconds64_t = int64             /* types.h:163:33 */
 
-type __unused__daddr_t = int32 /* types.h:165:27 */ // The type of a disk address.
-type __unused__key_t = int32   /* types.h:166:25 */ // Type of an IPC key.
+type __daddr_t = int32 /* types.h:165:27 */ // The type of a disk address.
+type __key_t = int32   /* types.h:166:25 */ // Type of an IPC key.
 
 // Clock ID used in clock and timer functions.
-type __unused__clockid_t = int32 /* types.h:169:29 */
+type __clockid_t = int32 /* types.h:169:29 */
 
 // Timer ID returned by `timer_create'.
-type __unused__timer_t = uintptr /* types.h:172:12 */
+type __timer_t = uintptr /* types.h:172:12 */
 
 // Type to represent block size.
-type __unused__blksize_t = int64 /* types.h:175:29 */
+type __blksize_t = int64 /* types.h:175:29 */
 
 // Types from the Large File Support interface.
 
 // Type to count number of disk blocks.
-type __unused__blkcnt_t = int64   /* types.h:180:28 */
-type __unused__blkcnt64_t = int64 /* types.h:181:30 */
+type __blkcnt_t = int64   /* types.h:180:28 */
+type __blkcnt64_t = int64 /* types.h:181:30 */
 
 // Type to count file system blocks.
-type __unused__fsblkcnt_t = uint64   /* types.h:184:30 */
-type __unused__fsblkcnt64_t = uint64 /* types.h:185:32 */
+type __fsblkcnt_t = uint64   /* types.h:184:30 */
+type __fsblkcnt64_t = uint64 /* types.h:185:32 */
 
 // Type to count file system nodes.
-type __unused__fsfilcnt_t = uint64   /* types.h:188:30 */
-type __unused__fsfilcnt64_t = uint64 /* types.h:189:32 */
+type __fsfilcnt_t = uint64   /* types.h:188:30 */
+type __fsfilcnt64_t = uint64 /* types.h:189:32 */
 
 // Type of miscellaneous file system fields.
-type __unused__fsword_t = int64 /* types.h:192:28 */
+type __fsword_t = int64 /* types.h:192:28 */
 
-type __unused__ssize_t = int64 /* types.h:194:27 */ // Type of a byte count, or error.
+type __ssize_t = int64 /* types.h:194:27 */ // Type of a byte count, or error.
 
 // Signed long type used in system calls.
-type __unused__syscall_slong_t = int64 /* types.h:197:33 */
+type __syscall_slong_t = int64 /* types.h:197:33 */
 // Unsigned long type used in system calls.
-type __unused__syscall_ulong_t = uint64 /* types.h:199:33 */
+type __syscall_ulong_t = uint64 /* types.h:199:33 */
 
 // These few don't really vary by system, they always correspond
 //    to one of the other defined types.
-type __unused__loff_t = __unused__off64_t /* types.h:203:19 */ // Type of file sizes and offsets (LFS).
-type __unused__caddr_t = uintptr          /* types.h:204:14 */
+type __loff_t = __off64_t /* types.h:203:19 */ // Type of file sizes and offsets (LFS).
+type __caddr_t = uintptr  /* types.h:204:14 */
 
 // Duplicates info from stdint.h but this is used in unistd.h.
-type __unused__intptr_t = int64 /* types.h:207:25 */
+type __intptr_t = int64 /* types.h:207:25 */
 
 // Duplicate info from sys/socket.h.
-type __unused__socklen_t = uint32 /* types.h:210:23 */
+type __socklen_t = uint32 /* types.h:210:23 */
 
 // C99: An integer type that can be accessed as an atomic entity,
 //    even in the presence of asynchronous interrupts.
 //    It is not currently necessary for this to be machine-specific.
-type __unused__sig_atomic_t = int32 /* types.h:215:13 */
+type __sig_atomic_t = int32 /* types.h:215:13 */
 
 // Seconds since the Epoch, visible to user code when time_t is too
 //    narrow only for consistency with the old way of widening too-narrow
 //    types.  User code should never use __time64_t.
 
-type __unusedu_char = __unused__u_char     /* types.h:33:18 */
-type __unusedu_short = __unused__u_short   /* types.h:34:19 */
-type __unusedu_int = __unused__u_int       /* types.h:35:17 */
-type __unusedu_long = __unused__u_long     /* types.h:36:18 */
-type __unusedquad_t = __unused__quad_t     /* types.h:37:18 */
-type __unusedu_quad_t = __unused__u_quad_t /* types.h:38:20 */
-type __unusedfsid_t = __unused__fsid_t     /* types.h:39:18 */
-type __unusedloff_t = __unused__loff_t     /* types.h:42:18 */
+type u_char = __u_char     /* types.h:33:18 */
+type u_short = __u_short   /* types.h:34:19 */
+type u_int = __u_int       /* types.h:35:17 */
+type u_long = __u_long     /* types.h:36:18 */
+type quad_t = __quad_t     /* types.h:37:18 */
+type u_quad_t = __u_quad_t /* types.h:38:20 */
+type fsid_t = __fsid_t     /* types.h:39:18 */
+type loff_t = __loff_t     /* types.h:42:18 */
 
-type __unusedino_t = __unused__ino64_t /* types.h:49:19 */
+type ino_t = __ino64_t /* types.h:49:19 */
 
-type __unuseddev_t = __unused__dev_t /* types.h:59:17 */
+type dev_t = __dev_t /* types.h:59:17 */
 
-type __unusedgid_t = __unused__gid_t /* types.h:64:17 */
+type gid_t = __gid_t /* types.h:64:17 */
 
-type __unusedmode_t = __unused__mode_t /* types.h:69:18 */
+type mode_t = __mode_t /* types.h:69:18 */
 
-type __unusednlink_t = __unused__nlink_t /* types.h:74:19 */
+type nlink_t = __nlink_t /* types.h:74:19 */
 
-type __unuseduid_t = __unused__uid_t /* types.h:79:17 */
+type uid_t = __uid_t /* types.h:79:17 */
 
-type __unusedoff_t = __unused__off64_t /* types.h:87:19 */
+type off_t = __off64_t /* types.h:87:19 */
 
-type __unusedpid_t = __unused__pid_t /* types.h:97:17 */
+type pid_t = __pid_t /* types.h:97:17 */
 
-type __unusedid_t = __unused__id_t /* types.h:103:16 */
+type id_t = __id_t /* types.h:103:16 */
 
-type __unusedssize_t = __unused__ssize_t /* types.h:108:19 */
+type ssize_t = __ssize_t /* types.h:108:19 */
 
-type __unuseddaddr_t = __unused__daddr_t /* types.h:114:19 */
-type __unusedcaddr_t = __unused__caddr_t /* types.h:115:19 */
+type daddr_t = __daddr_t /* types.h:114:19 */
+type caddr_t = __caddr_t /* types.h:115:19 */
 
-type __unusedkey_t = __unused__key_t /* types.h:121:17 */
+type key_t = __key_t /* types.h:121:17 */
 
 // bits/types.h -- definitions of __*_t types underlying *_t types.
 //    Copyright (C) 2002-2020 Free Software Foundation, Inc.
@@ -1197,7 +640,7 @@ type __unusedkey_t = __unused__key_t /* types.h:121:17 */
 // Never include this file directly; use <sys/types.h> instead.
 
 // Returned by `clock'.
-type __unusedclock_t = __unused__clock_t /* clock_t.h:7:19 */
+type clock_t = __clock_t /* clock_t.h:7:19 */
 
 // bits/types.h -- definitions of __*_t types underlying *_t types.
 //    Copyright (C) 2002-2020 Free Software Foundation, Inc.
@@ -1220,7 +663,7 @@ type __unusedclock_t = __unused__clock_t /* clock_t.h:7:19 */
 // Never include this file directly; use <sys/types.h> instead.
 
 // Clock ID used in clock and timer functions.
-type __unusedclockid_t = __unused__clockid_t /* clockid_t.h:7:21 */
+type clockid_t = __clockid_t /* clockid_t.h:7:21 */
 
 // bits/types.h -- definitions of __*_t types underlying *_t types.
 //    Copyright (C) 2002-2020 Free Software Foundation, Inc.
@@ -1243,7 +686,7 @@ type __unusedclockid_t = __unused__clockid_t /* clockid_t.h:7:21 */
 // Never include this file directly; use <sys/types.h> instead.
 
 // Returned by `time'.
-type __unusedtime_t = __unused__time_t /* time_t.h:7:18 */
+type time_t = __time_t /* time_t.h:7:18 */
 
 // bits/types.h -- definitions of __*_t types underlying *_t types.
 //    Copyright (C) 2002-2020 Free Software Foundation, Inc.
@@ -1266,7 +709,7 @@ type __unusedtime_t = __unused__time_t /* time_t.h:7:18 */
 // Never include this file directly; use <sys/types.h> instead.
 
 // Timer ID returned by `timer_create'.
-type __unusedtimer_t = __unused__timer_t /* timer_t.h:7:19 */
+type timer_t = __timer_t /* timer_t.h:7:19 */
 
 // Copyright (C) 1989-2020 Free Software Foundation, Inc.
 //
@@ -1337,9 +780,9 @@ type __unusedtimer_t = __unused__timer_t /* timer_t.h:7:19 */
 // A null pointer constant.
 
 // Old compatibility names for C types.
-type __unusedulong = uint64  /* types.h:148:27 */
-type __unusedushort = uint16 /* types.h:149:28 */
-type __unuseduint = uint32   /* types.h:150:22 */
+type ulong = uint64  /* types.h:148:27 */
+type ushort = uint16 /* types.h:149:28 */
+type uint = uint32   /* types.h:150:22 */
 
 // These size-specific names are used by some of the inet code.
 
@@ -1381,18 +824,18 @@ type __unuseduint = uint32   /* types.h:150:22 */
 
 // Never include this file directly; use <sys/types.h> instead.
 
-type __unusedint8_t = __unused__int8_t   /* stdint-intn.h:24:18 */
-type __unusedint16_t = __unused__int16_t /* stdint-intn.h:25:19 */
-type __unusedint32_t = __unused__int32_t /* stdint-intn.h:26:19 */
-type __unusedint64_t = __unused__int64_t /* stdint-intn.h:27:19 */
+type int8_t = __int8_t   /* stdint-intn.h:24:18 */
+type int16_t = __int16_t /* stdint-intn.h:25:19 */
+type int32_t = __int32_t /* stdint-intn.h:26:19 */
+type int64_t = __int64_t /* stdint-intn.h:27:19 */
 
 // These were defined by ISO C without the first `_'.
-type __unusedu_int8_t = __unused__uint8_t   /* types.h:158:19 */
-type __unusedu_int16_t = __unused__uint16_t /* types.h:159:20 */
-type __unusedu_int32_t = __unused__uint32_t /* types.h:160:20 */
-type __unusedu_int64_t = __unused__uint64_t /* types.h:161:20 */
+type u_int8_t = __uint8_t   /* types.h:158:19 */
+type u_int16_t = __uint16_t /* types.h:159:20 */
+type u_int32_t = __uint32_t /* types.h:160:20 */
+type u_int64_t = __uint64_t /* types.h:161:20 */
 
-type __unusedregister_t = int32 /* types.h:164:13 */
+type register_t = int32 /* types.h:164:13 */
 
 // It also defines `fd_set' and the FD_* macros for `select'.
 // `fd_set' type and related macros, and `select'/`pselect' declarations.
@@ -1476,10 +919,10 @@ type __unusedregister_t = int32 /* types.h:164:13 */
 
 // Get sigset_t.
 
-type __unused__sigset_t = struct{ __unused__val [16]uint64 } /* __sigset_t.h:8:3 */
+type __sigset_t = struct{ __val [16]uint64 } /* __sigset_t.h:8:3 */
 
 // A set of signals to be blocked, unblocked, or waited for.
-type __unusedsigset_t = __unused__sigset_t /* sigset_t.h:7:20 */
+type sigset_t = __sigset_t /* sigset_t.h:7:20 */
 
 // Get definition of timer specification structures.
 
@@ -1505,9 +948,9 @@ type __unusedsigset_t = __unused__sigset_t /* sigset_t.h:7:20 */
 
 // A time value that is accurate to the nearest
 //    microsecond but also has a range of years.
-type __unusedtimeval = struct {
-	__unusedtv_sec  __unused__time_t
-	__unusedtv_usec __unused__suseconds_t
+type timeval = struct {
+	tv_sec  __time_t
+	tv_usec __suseconds_t
 } /* struct_timeval.h:8:1 */
 
 // NB: Include guard matches what <linux/time.h> uses.
@@ -1552,35 +995,35 @@ type __unusedtimeval = struct {
 
 // POSIX.1b structure for a time value.  This is like a `struct timeval' but
 //    has nanoseconds instead of microseconds.
-type __unusedtimespec = struct {
-	__unusedtv_sec  __unused__time_t
-	__unusedtv_nsec __unused__syscall_slong_t
+type timespec = struct {
+	tv_sec  __time_t
+	tv_nsec __syscall_slong_t
 } /* struct_timespec.h:10:1 */
 
-type __unusedsuseconds_t = __unused__suseconds_t /* select.h:43:23 */
+type suseconds_t = __suseconds_t /* select.h:43:23 */
 
 // The fd_set member is required to be an array of longs.
-type __unused__fd_mask = int64 /* select.h:49:18 */
+type __fd_mask = int64 /* select.h:49:18 */
 
 // Some versions of <linux/posix_types.h> define this macros.
 // It's easier to assume 8-bit bytes than to get CHAR_BIT.
 
 // fd_set for select and pselect.
-type __unusedfd_set = struct{ __unused__fds_bits [16]__unused__fd_mask } /* select.h:70:5 */
+type fd_set = struct{ __fds_bits [16]__fd_mask } /* select.h:70:5 */
 
 // Maximum number of file descriptors in `fd_set'.
 
 // Sometimes the fd_set member is assumed to have this type.
-type __unusedfd_mask = __unused__fd_mask /* select.h:77:19 */
+type fd_mask = __fd_mask /* select.h:77:19 */
 
 // Define some inlines helping to catch common problems.
 
-type __unusedblksize_t = __unused__blksize_t /* types.h:185:21 */
+type blksize_t = __blksize_t /* types.h:185:21 */
 
 // Types from the Large File Support interface.
-type __unusedblkcnt_t = __unused__blkcnt64_t     /* types.h:205:22 */ // Type to count number of disk blocks.
-type __unusedfsblkcnt_t = __unused__fsblkcnt64_t /* types.h:209:24 */ // Type to count file system blocks.
-type __unusedfsfilcnt_t = __unused__fsfilcnt64_t /* types.h:213:24 */ // Type to count file system inodes.
+type blkcnt_t = __blkcnt64_t     /* types.h:205:22 */ // Type to count number of disk blocks.
+type fsblkcnt_t = __fsblkcnt64_t /* types.h:209:24 */ // Type to count file system blocks.
+type fsfilcnt_t = __fsfilcnt64_t /* types.h:213:24 */ // Type to count file system inodes.
 
 // Now add the thread types.
 // Declaration of common pthread types for all architectures.
@@ -1665,9 +1108,9 @@ type __unusedfsfilcnt_t = __unused__fsfilcnt64_t /* types.h:213:24 */ // Type to
 
 // Common definition of pthread_mutex_t.
 
-type __unused__pthread_internal_list = struct {
-	__unused__prev uintptr
-	__unused__next uintptr
+type __pthread_internal_list = struct {
+	__prev uintptr
+	__next uintptr
 } /* thread-shared-types.h:49:9 */
 
 // Type to count file system inodes.
@@ -1755,11 +1198,11 @@ type __unused__pthread_internal_list = struct {
 
 // Common definition of pthread_mutex_t.
 
-type __unused__pthread_list_t = __unused__pthread_internal_list /* thread-shared-types.h:53:3 */
+type __pthread_list_t = __pthread_internal_list /* thread-shared-types.h:53:3 */
 
-type __unused__pthread_internal_slist = struct{ __unused__next uintptr } /* thread-shared-types.h:55:9 */
+type __pthread_internal_slist = struct{ __next uintptr } /* thread-shared-types.h:55:9 */
 
-type __unused__pthread_slist_t = __unused__pthread_internal_slist /* thread-shared-types.h:58:3 */
+type __pthread_slist_t = __pthread_internal_slist /* thread-shared-types.h:58:3 */
 
 // Arch-specific mutex definitions.  A generic implementation is provided
 //    by sysdeps/nptl/bits/struct_mutex.h.  If required, an architecture
@@ -1793,15 +1236,15 @@ type __unused__pthread_slist_t = __unused__pthread_internal_slist /* thread-shar
 //    License along with the GNU C Library; if not, see
 //    <http://www.gnu.org/licenses/>.
 
-type __unused__pthread_mutex_s = struct {
-	__unused__lock    int32
-	__unused__count   uint32
-	__unused__owner   int32
-	__unused__nusers  uint32
-	__unused__kind    int32
-	__unused__spins   int16
-	__unused__elision int16
-	__unused__list    __unused__pthread_list_t
+type __pthread_mutex_s = struct {
+	__lock    int32
+	__count   uint32
+	__owner   int32
+	__nusers  uint32
+	__kind    int32
+	__spins   int16
+	__elision int16
+	__list    __pthread_list_t
 } /* struct_mutex.h:22:1 */
 
 // Arch-sepecific read-write lock definitions.  A generic implementation is
@@ -1834,128 +1277,126 @@ type __unused__pthread_mutex_s = struct {
 //    License along with the GNU C Library; if not, see
 //    <http://www.gnu.org/licenses/>.
 
-type __unused__pthread_rwlock_arch_t = struct {
-	__unused__readers       uint32
-	__unused__writers       uint32
-	__unused__wrphase_futex uint32
-	__unused__writers_futex uint32
-	__unused__pad3          uint32
-	__unused__pad4          uint32
-	__unused__cur_writer    int32
-	__unused__shared        int32
-	__unused__rwelision     int8
-	__unused__pad1          [7]uint8
-	__unused__pad2          uint64
-	__unused__flags         uint32
-	_                       [4]byte
+type __pthread_rwlock_arch_t = struct {
+	__readers       uint32
+	__writers       uint32
+	__wrphase_futex uint32
+	__writers_futex uint32
+	__pad3          uint32
+	__pad4          uint32
+	__cur_writer    int32
+	__shared        int32
+	__rwelision     int8
+	__pad1          [7]uint8
+	__pad2          uint64
+	__flags         uint32
+	_               [4]byte
 } /* struct_rwlock.h:23:1 */
 
 // Common definition of pthread_cond_t.
 
-type __unused__pthread_cond_s = struct {
-	__unused__0            struct{ __unused__wseq uint64 }
-	__unused__8            struct{ __unused__g1_start uint64 }
-	__unused__g_refs       [2]uint32
-	__unused__g_size       [2]uint32
-	__unused__g1_orig_size uint32
-	__unused__wrefs        uint32
-	__unused__g_signals    [2]uint32
+type __pthread_cond_s = struct {
+	__0            struct{ __wseq uint64 }
+	__8            struct{ __g1_start uint64 }
+	__g_refs       [2]uint32
+	__g_size       [2]uint32
+	__g1_orig_size uint32
+	__wrefs        uint32
+	__g_signals    [2]uint32
 } /* thread-shared-types.h:92:1 */
 
-type __unused__tss_t = uint32  /* thread-shared-types.h:119:22 */
-type __unused__thrd_t = uint64 /* thread-shared-types.h:120:27 */
+type __tss_t = uint32  /* thread-shared-types.h:119:22 */
+type __thrd_t = uint64 /* thread-shared-types.h:120:27 */
 
-type __unused__once_flag = struct{ __unused__data int32 } /* thread-shared-types.h:125:3 */
+type __once_flag = struct{ __data int32 } /* thread-shared-types.h:125:3 */
 
 // Thread identifiers.  The structure of the attribute type is not
 //    exposed on purpose.
-type __unusedpthread_t = uint64 /* pthreadtypes.h:27:27 */
+type pthread_t = uint64 /* pthreadtypes.h:27:27 */
 
 // Data structures for mutex handling.  The structure of the attribute
 //    type is not exposed on purpose.
-type __unusedpthread_mutexattr_t = struct {
-	_              [0]uint32
-	__unused__size [4]int8
+type pthread_mutexattr_t = struct {
+	_      [0]uint32
+	__size [4]int8
 } /* pthreadtypes.h:36:3 */
 
 // Data structure for condition variable handling.  The structure of
 //    the attribute type is not exposed on purpose.
-type __unusedpthread_condattr_t = struct {
-	_              [0]uint32
-	__unused__size [4]int8
+type pthread_condattr_t = struct {
+	_      [0]uint32
+	__size [4]int8
 } /* pthreadtypes.h:45:3 */
 
 // Keys for thread-specific data
-type __unusedpthread_key_t = uint32 /* pthreadtypes.h:49:22 */
+type pthread_key_t = uint32 /* pthreadtypes.h:49:22 */
 
 // Once-only execution
-type __unusedpthread_once_t = int32 /* pthreadtypes.h:53:30 */
+type pthread_once_t = int32 /* pthreadtypes.h:53:30 */
 
-type __unusedpthread_attr_t1 = struct {
-	_              [0]uint64
-	__unused__size [56]int8
+type pthread_attr_t1 = struct {
+	_      [0]uint64
+	__size [56]int8
 } /* pthreadtypes.h:56:1 */
 
-type __unusedpthread_attr_t = __unusedpthread_attr_t1 /* pthreadtypes.h:62:30 */
+type pthread_attr_t = pthread_attr_t1 /* pthreadtypes.h:62:30 */
 
-type __unusedpthread_mutex_t = struct{ __unused__data __unused__pthread_mutex_s } /* pthreadtypes.h:72:3 */
+type pthread_mutex_t = struct{ __data __pthread_mutex_s } /* pthreadtypes.h:72:3 */
 
-type __unusedpthread_cond_t = struct{ __unused__data __unused__pthread_cond_s } /* pthreadtypes.h:80:3 */
+type pthread_cond_t = struct{ __data __pthread_cond_s } /* pthreadtypes.h:80:3 */
 
 // Data structure for reader-writer lock variable handling.  The
 //    structure of the attribute type is deliberately not exposed.
-type __unusedpthread_rwlock_t = struct {
-	__unused__data __unused__pthread_rwlock_arch_t
-} /* pthreadtypes.h:91:3 */
+type pthread_rwlock_t = struct{ __data __pthread_rwlock_arch_t } /* pthreadtypes.h:91:3 */
 
-type __unusedpthread_rwlockattr_t = struct {
-	_              [0]uint64
-	__unused__size [8]int8
+type pthread_rwlockattr_t = struct {
+	_      [0]uint64
+	__size [8]int8
 } /* pthreadtypes.h:97:3 */
 
 // POSIX spinlock data type.
-type __unusedpthread_spinlock_t = int32 /* pthreadtypes.h:103:22 */
+type pthread_spinlock_t = int32 /* pthreadtypes.h:103:22 */
 
 // POSIX barriers data type.  The structure of the type is
 //    deliberately not exposed.
-type __unusedpthread_barrier_t = struct {
-	_              [0]uint64
-	__unused__size [32]int8
+type pthread_barrier_t = struct {
+	_      [0]uint64
+	__size [32]int8
 } /* pthreadtypes.h:112:3 */
 
-type __unusedpthread_barrierattr_t = struct {
-	_              [0]uint32
-	__unused__size [4]int8
+type pthread_barrierattr_t = struct {
+	_      [0]uint32
+	__size [4]int8
 } /* pthreadtypes.h:118:3 */
 
 // Reentrant versions of the `random' family of functions.
 //    These functions all use the following data structure to contain
 //    state, rather than global state variables.
 
-type __unusedrandom_data = struct {
-	__unusedfptr      uintptr
-	__unusedrptr      uintptr
-	__unusedstate     uintptr
-	__unusedrand_type int32
-	__unusedrand_deg  int32
-	__unusedrand_sep  int32
-	_                 [4]byte
-	__unusedend_ptr   uintptr
+type random_data = struct {
+	fptr      uintptr
+	rptr      uintptr
+	state     uintptr
+	rand_type int32
+	rand_deg  int32
+	rand_sep  int32
+	_         [4]byte
+	end_ptr   uintptr
 } /* stdlib.h:423:1 */
 
 // Data structure for communication with thread safe versions.  This
 //    type is to be regarded as opaque.  It's only exported because users
 //    have to allocate objects of this type.
-type __unuseddrand48_data = struct {
-	__unused__x     [3]uint16
-	__unused__old_x [3]uint16
-	__unused__c     uint16
-	__unused__init  uint16
-	__unused__a     uint64
+type drand48_data = struct {
+	__x     [3]uint16
+	__old_x [3]uint16
+	__c     uint16
+	__init  uint16
+	__a     uint64
 } /* stdlib.h:490:1 */
 
 // Shorthand for type of comparison functions.
-type __unused__compar_fn_t = uintptr /* stdlib.h:808:13 */
+type __compar_fn_t = uintptr /* stdlib.h:808:13 */
 
 // Floating-point inline functions for stdlib.h.
 //    Copyright (C) 2012-2020 Free Software Foundation, Inc.
@@ -2169,7 +1610,7 @@ type __unused__compar_fn_t = uintptr /* stdlib.h:808:13 */
 
 // Define __gnuc_va_list.
 
-type __unused__gnuc_va_list = __unused__builtin_va_list /* stdarg.h:40:27 */
+type __gnuc_va_list = __builtin_va_list /* stdarg.h:40:27 */
 
 // Define the standard macros for the user,
 //    if this invocation was from the user program.
@@ -2220,23 +1661,23 @@ type __unused__gnuc_va_list = __unused__builtin_va_list /* stdarg.h:40:27 */
 //    member of the extended character set.
 
 // Conversion state information.
-type __unused__mbstate_t = struct {
-	__unused__count int32
-	__unused__value struct{ __unused__wch uint32 }
+type __mbstate_t = struct {
+	__count int32
+	__value struct{ __wch uint32 }
 } /* __mbstate_t.h:21:3 */
 
 // The tag name of this struct is _G_fpos_t to preserve historic
 //    C++ mangled names for functions taking fpos_t arguments.
 //    That name should not be used in new code.
-type __unused_G_fpos_t = struct {
-	__unused__pos   __unused__off_t
-	__unused__state __unused__mbstate_t
+type _G_fpos_t = struct {
+	__pos   __off_t
+	__state __mbstate_t
 } /* __fpos_t.h:10:9 */
 
 // The tag name of this struct is _G_fpos_t to preserve historic
 //    C++ mangled names for functions taking fpos_t arguments.
 //    That name should not be used in new code.
-type __unused__fpos_t = __unused_G_fpos_t /* __fpos_t.h:14:3 */
+type __fpos_t = _G_fpos_t /* __fpos_t.h:14:3 */
 
 // bits/types.h -- definitions of __*_t types underlying *_t types.
 //    Copyright (C) 2002-2020 Free Software Foundation, Inc.
@@ -2261,9 +1702,9 @@ type __unused__fpos_t = __unused_G_fpos_t /* __fpos_t.h:14:3 */
 // The tag name of this struct is _G_fpos64_t to preserve historic
 //    C++ mangled names for functions taking fpos_t and/or fpos64_t
 //    arguments.  That name should not be used in new code.
-type __unused_G_fpos64_t = struct {
-	__unused__pos   __unused__off64_t
-	__unused__state __unused__mbstate_t
+type _G_fpos64_t = struct {
+	__pos   __off64_t
+	__state __mbstate_t
 } /* __fpos64_t.h:10:9 */
 
 // bits/types.h -- definitions of __*_t types underlying *_t types.
@@ -2289,55 +1730,55 @@ type __unused_G_fpos64_t = struct {
 // The tag name of this struct is _G_fpos64_t to preserve historic
 //    C++ mangled names for functions taking fpos_t and/or fpos64_t
 //    arguments.  That name should not be used in new code.
-type __unused__fpos64_t = __unused_G_fpos64_t /* __fpos64_t.h:14:3 */
+type __fpos64_t = _G_fpos64_t /* __fpos64_t.h:14:3 */
 
-type __unused_IO_FILE = struct {
-	__unused_flags          int32
-	_                       [4]byte
-	__unused_IO_read_ptr    uintptr
-	__unused_IO_read_end    uintptr
-	__unused_IO_read_base   uintptr
-	__unused_IO_write_base  uintptr
-	__unused_IO_write_ptr   uintptr
-	__unused_IO_write_end   uintptr
-	__unused_IO_buf_base    uintptr
-	__unused_IO_buf_end     uintptr
-	__unused_IO_save_base   uintptr
-	__unused_IO_backup_base uintptr
-	__unused_IO_save_end    uintptr
-	__unused_markers        uintptr
-	__unused_chain          uintptr
-	__unused_fileno         int32
-	__unused_flags2         int32
-	__unused_old_offset     __unused__off_t
-	__unused_cur_column     uint16
-	__unused_vtable_offset  int8
-	__unused_shortbuf       [1]int8
-	_                       [4]byte
-	__unused_lock           uintptr
-	__unused_offset         __unused__off64_t
-	__unused_codecvt        uintptr
-	__unused_wide_data      uintptr
-	__unused_freeres_list   uintptr
-	__unused_freeres_buf    uintptr
-	__unused__pad5          __unusedsize_t
-	__unused_mode           int32
-	__unused_unused2        [20]int8
+type _IO_FILE = struct {
+	_flags          int32
+	_               [4]byte
+	_IO_read_ptr    uintptr
+	_IO_read_end    uintptr
+	_IO_read_base   uintptr
+	_IO_write_base  uintptr
+	_IO_write_ptr   uintptr
+	_IO_write_end   uintptr
+	_IO_buf_base    uintptr
+	_IO_buf_end     uintptr
+	_IO_save_base   uintptr
+	_IO_backup_base uintptr
+	_IO_save_end    uintptr
+	_markers        uintptr
+	_chain          uintptr
+	_fileno         int32
+	_flags2         int32
+	_old_offset     __off_t
+	_cur_column     uint16
+	_vtable_offset  int8
+	_shortbuf       [1]int8
+	_               [4]byte
+	_lock           uintptr
+	_offset         __off64_t
+	_codecvt        uintptr
+	_wide_data      uintptr
+	_freeres_list   uintptr
+	_freeres_buf    uintptr
+	__pad5          size_t
+	_mode           int32
+	_unused2        [20]int8
 } /* __FILE.h:4:1 */
 
-type __unused__FILE = __unused_IO_FILE /* __FILE.h:5:25 */
+type __FILE = _IO_FILE /* __FILE.h:5:25 */
 
 // The opaque type of streams.  This is the definition used elsewhere.
-type __unusedFILE = __unused_IO_FILE /* FILE.h:7:25 */
+type fILE = _IO_FILE /* FILE.h:7:25 */
 
 // These macros are used by bits/stdio.h and internal headers.
 
 // Many more flag bits are defined internally.
 
-type __unusedva_list = __unused__gnuc_va_list /* stdio.h:52:24 */
+type va_list = __gnuc_va_list /* stdio.h:52:24 */
 
 // The type of the second argument to `fgetpos' and `fsetpos'.
-type __unusedfpos_t = __unused__fpos64_t /* stdio.h:86:20 */
+type fpos_t = __fpos64_t /* stdio.h:86:20 */
 
 // CAPI3REF: 64-Bit Integer Types
 // KEYWORDS: sqlite_int64 sqlite_uint64
@@ -2353,15 +1794,15 @@ type __unusedfpos_t = __unused__fpos64_t /* stdio.h:86:20 */
 // between -9223372036854775808 and +9223372036854775807 inclusive.  ^The
 // sqlite3_uint64 and sqlite_uint64 types can store integer values
 // between 0 and +18446744073709551615 inclusive.
-type __unusedsqlite_int64 = int64                   /* sqlite3.h:278:25 */
-type __unusedsqlite_uint64 = uint64                 /* sqlite3.h:279:34 */
-type __unusedsqlite3_int64 = __unusedsqlite_int64   /* sqlite3.h:281:22 */
-type __unusedsqlite3_uint64 = __unusedsqlite_uint64 /* sqlite3.h:282:23 */
+type sqlite_int64 = int64           /* sqlite3.h:278:25 */
+type sqlite_uint64 = uint64         /* sqlite3.h:279:34 */
+type sqlite3_int64 = sqlite_int64   /* sqlite3.h:281:22 */
+type sqlite3_uint64 = sqlite_uint64 /* sqlite3.h:282:23 */
 
 // The type for a callback function.
 // This is legacy and deprecated.  It is included for historical
 // compatibility and is not documented.
-type __unusedsqlite3_callback = uintptr /* sqlite3.h:338:13 */
+type sqlite3_callback = uintptr /* sqlite3.h:338:13 */
 
 // CAPI3REF: Result Codes
 // KEYWORDS: {result code definitions}
@@ -2472,7 +1913,7 @@ type __unusedsqlite3_callback = uintptr /* sqlite3.h:338:13 */
 // for their own use.  The pMethods entry is a pointer to an
 // [sqlite3_io_methods] object that defines methods for performing
 // I/O operations on the open file.
-type __unusedsqlite3_file1 = struct{ __unusedpMethods uintptr } /* sqlite3.h:684:9 */
+type sqlite3_file1 = struct{ pMethods uintptr } /* sqlite3.h:684:9 */
 
 // CAPI3REF: Result Codes
 // KEYWORDS: {result code definitions}
@@ -2583,28 +2024,28 @@ type __unusedsqlite3_file1 = struct{ __unusedpMethods uintptr } /* sqlite3.h:684
 // for their own use.  The pMethods entry is a pointer to an
 // [sqlite3_io_methods] object that defines methods for performing
 // I/O operations on the open file.
-type __unusedsqlite3_file = __unusedsqlite3_file1 /* sqlite3.h:684:29 */
-type __unusedsqlite3_io_methods1 = struct {
-	__unusediVersion               int32
-	_                              [4]byte
-	__unusedxClose                 uintptr
-	__unusedxRead                  uintptr
-	__unusedxWrite                 uintptr
-	__unusedxTruncate              uintptr
-	__unusedxSync                  uintptr
-	__unusedxFileSize              uintptr
-	__unusedxLock                  uintptr
-	__unusedxUnlock                uintptr
-	__unusedxCheckReservedLock     uintptr
-	__unusedxFileControl           uintptr
-	__unusedxSectorSize            uintptr
-	__unusedxDeviceCharacteristics uintptr
-	__unusedxShmMap                uintptr
-	__unusedxShmLock               uintptr
-	__unusedxShmBarrier            uintptr
-	__unusedxShmUnmap              uintptr
-	__unusedxFetch                 uintptr
-	__unusedxUnfetch               uintptr
+type sqlite3_file = sqlite3_file1 /* sqlite3.h:684:29 */
+type sqlite3_io_methods1 = struct {
+	iVersion               int32
+	_                      [4]byte
+	xClose                 uintptr
+	xRead                  uintptr
+	xWrite                 uintptr
+	xTruncate              uintptr
+	xSync                  uintptr
+	xFileSize              uintptr
+	xLock                  uintptr
+	xUnlock                uintptr
+	xCheckReservedLock     uintptr
+	xFileControl           uintptr
+	xSectorSize            uintptr
+	xDeviceCharacteristics uintptr
+	xShmMap                uintptr
+	xShmLock               uintptr
+	xShmBarrier            uintptr
+	xShmUnmap              uintptr
+	xFetch                 uintptr
+	xUnfetch               uintptr
 } /* sqlite3.h:684:9 */
 
 // CAPI3REF: OS Interface File Virtual Methods Object
@@ -2699,7 +2140,7 @@ type __unusedsqlite3_io_methods1 = struct {
 // fails to zero-fill short reads might seem to work.  However,
 // failure to zero-fill short reads will eventually lead to
 // database corruption.
-type __unusedsqlite3_io_methods = __unusedsqlite3_io_methods1 /* sqlite3.h:783:35 */
+type sqlite3_io_methods = sqlite3_io_methods1 /* sqlite3.h:783:35 */
 
 // CAPI3REF: OS Interface Object
 //
@@ -2868,30 +2309,30 @@ type __unusedsqlite3_io_methods = __unusedsqlite3_io_methods1 /* sqlite3.h:783:3
 // or all of these interfaces to be NULL or for their behavior to change
 // from one release to the next.  Applications must not attempt to access
 // any of these methods if the iVersion of the VFS is less than 3.
-type __unusedsqlite3_vfs1 = struct {
-	__unusediVersion          int32
-	__unusedszOsFile          int32
-	__unusedmxPathname        int32
-	_                         [4]byte
-	__unusedpNext             uintptr
-	__unusedzName             uintptr
-	__unusedpAppData          uintptr
-	__unusedxOpen             uintptr
-	__unusedxDelete           uintptr
-	__unusedxAccess           uintptr
-	__unusedxFullPathname     uintptr
-	__unusedxDlOpen           uintptr
-	__unusedxDlError          uintptr
-	__unusedxDlSym            uintptr
-	__unusedxDlClose          uintptr
-	__unusedxRandomness       uintptr
-	__unusedxSleep            uintptr
-	__unusedxCurrentTime      uintptr
-	__unusedxGetLastError     uintptr
-	__unusedxCurrentTimeInt64 uintptr
-	__unusedxSetSystemCall    uintptr
-	__unusedxGetSystemCall    uintptr
-	__unusedxNextSystemCall   uintptr
+type sqlite3_vfs1 = struct {
+	iVersion          int32
+	szOsFile          int32
+	mxPathname        int32
+	_                 [4]byte
+	pNext             uintptr
+	zName             uintptr
+	pAppData          uintptr
+	xOpen             uintptr
+	xDelete           uintptr
+	xAccess           uintptr
+	xFullPathname     uintptr
+	xDlOpen           uintptr
+	xDlError          uintptr
+	xDlSym            uintptr
+	xDlClose          uintptr
+	xRandomness       uintptr
+	xSleep            uintptr
+	xCurrentTime      uintptr
+	xGetLastError     uintptr
+	xCurrentTimeInt64 uintptr
+	xSetSystemCall    uintptr
+	xGetSystemCall    uintptr
+	xNextSystemCall   uintptr
 } /* sqlite3.h:1368:9 */
 
 // CAPI3REF: OS Interface Object
@@ -3061,8 +2502,8 @@ type __unusedsqlite3_vfs1 = struct {
 // or all of these interfaces to be NULL or for their behavior to change
 // from one release to the next.  Applications must not attempt to access
 // any of these methods if the iVersion of the VFS is less than 3.
-type __unusedsqlite3_vfs = __unusedsqlite3_vfs1 /* sqlite3.h:1368:28 */
-type __unusedsqlite3_syscall_ptr = uintptr      /* sqlite3.h:1369:14 */
+type sqlite3_vfs = sqlite3_vfs1    /* sqlite3.h:1368:28 */
+type sqlite3_syscall_ptr = uintptr /* sqlite3.h:1369:14 */
 
 // CAPI3REF: Memory Allocation Routines
 //
@@ -3125,15 +2566,15 @@ type __unusedsqlite3_syscall_ptr = uintptr      /* sqlite3.h:1369:14 */
 //
 // SQLite will never invoke xInit() more than once without an intervening
 // call to xShutdown().
-type __unusedsqlite3_mem_methods1 = struct {
-	__unusedxMalloc   uintptr
-	__unusedxFree     uintptr
-	__unusedxRealloc  uintptr
-	__unusedxSize     uintptr
-	__unusedxRoundup  uintptr
-	__unusedxInit     uintptr
-	__unusedxShutdown uintptr
-	__unusedpAppData  uintptr
+type sqlite3_mem_methods1 = struct {
+	xMalloc   uintptr
+	xFree     uintptr
+	xRealloc  uintptr
+	xSize     uintptr
+	xRoundup  uintptr
+	xInit     uintptr
+	xShutdown uintptr
+	pAppData  uintptr
 } /* sqlite3.h:1666:9 */
 
 // CAPI3REF: Memory Allocation Routines
@@ -3197,7 +2638,7 @@ type __unusedsqlite3_mem_methods1 = struct {
 //
 // SQLite will never invoke xInit() more than once without an intervening
 // call to xShutdown().
-type __unusedsqlite3_mem_methods = __unusedsqlite3_mem_methods1 /* sqlite3.h:1666:36 */
+type sqlite3_mem_methods = sqlite3_mem_methods1 /* sqlite3.h:1666:36 */
 
 // CAPI3REF: Constants Defining Special Destructor Behavior
 //
@@ -3211,7 +2652,7 @@ type __unusedsqlite3_mem_methods = __unusedsqlite3_mem_methods1 /* sqlite3.h:166
 //
 // The typedef is necessary to work around problems in certain
 // C++ compilers.
-type __unusedsqlite3_destructor_type = uintptr /* sqlite3.h:5622:14 */
+type sqlite3_destructor_type = uintptr /* sqlite3.h:5622:14 */
 
 // The interface to the virtual-table mechanism is currently considered
 // to be experimental.  The interface might change in incompatible ways.
@@ -3221,11 +2662,11 @@ type __unusedsqlite3_destructor_type = uintptr /* sqlite3.h:5622:14 */
 // interface fixed, support it indefinitely, and remove this comment.
 
 // Structures used by the virtual table interface
-type __unusedsqlite3_vtab1 = struct {
-	__unusedpModule uintptr
-	__unusednRef    int32
-	_               [4]byte
-	__unusedzErrMsg uintptr
+type sqlite3_vtab1 = struct {
+	pModule uintptr
+	nRef    int32
+	_       [4]byte
+	zErrMsg uintptr
 } /* sqlite3.h:6741:9 */
 
 // The interface to the virtual-table mechanism is currently considered
@@ -3236,60 +2677,60 @@ type __unusedsqlite3_vtab1 = struct {
 // interface fixed, support it indefinitely, and remove this comment.
 
 // Structures used by the virtual table interface
-type __unusedsqlite3_vtab = __unusedsqlite3_vtab1 /* sqlite3.h:6741:29 */
-type __unusedsqlite3_index_info1 = struct {
-	__unusednConstraint      int32
-	_                        [4]byte
-	__unusedaConstraint      uintptr
-	__unusednOrderBy         int32
-	_                        [4]byte
-	__unusedaOrderBy         uintptr
-	__unusedaConstraintUsage uintptr
-	__unusedidxNum           int32
-	_                        [4]byte
-	__unusedidxStr           uintptr
-	__unusedneedToFreeIdxStr int32
-	__unusedorderByConsumed  int32
-	__unusedestimatedCost    float64
-	__unusedestimatedRows    __unusedsqlite3_int64
-	__unusedidxFlags         int32
-	_                        [4]byte
-	__unusedcolUsed          __unusedsqlite3_uint64
+type sqlite3_vtab = sqlite3_vtab1 /* sqlite3.h:6741:29 */
+type sqlite3_index_info1 = struct {
+	nConstraint      int32
+	_                [4]byte
+	aConstraint      uintptr
+	nOrderBy         int32
+	_                [4]byte
+	aOrderBy         uintptr
+	aConstraintUsage uintptr
+	idxNum           int32
+	_                [4]byte
+	idxStr           uintptr
+	needToFreeIdxStr int32
+	orderByConsumed  int32
+	estimatedCost    float64
+	estimatedRows    sqlite3_int64
+	idxFlags         int32
+	_                [4]byte
+	colUsed          sqlite3_uint64
 } /* sqlite3.h:6742:9 */
 
-type __unusedsqlite3_index_info = __unusedsqlite3_index_info1       /* sqlite3.h:6742:35 */
-type __unusedsqlite3_vtab_cursor1 = struct{ __unusedpVtab uintptr } /* sqlite3.h:6743:9 */
+type sqlite3_index_info = sqlite3_index_info1       /* sqlite3.h:6742:35 */
+type sqlite3_vtab_cursor1 = struct{ pVtab uintptr } /* sqlite3.h:6743:9 */
 
-type __unusedsqlite3_vtab_cursor = __unusedsqlite3_vtab_cursor1 /* sqlite3.h:6743:36 */
-type __unusedsqlite3_module1 = struct {
-	__unusediVersion      int32
-	_                     [4]byte
-	__unusedxCreate       uintptr
-	__unusedxConnect      uintptr
-	__unusedxBestIndex    uintptr
-	__unusedxDisconnect   uintptr
-	__unusedxDestroy      uintptr
-	__unusedxOpen         uintptr
-	__unusedxClose        uintptr
-	__unusedxFilter       uintptr
-	__unusedxNext         uintptr
-	__unusedxEof          uintptr
-	__unusedxColumn       uintptr
-	__unusedxRowid        uintptr
-	__unusedxUpdate       uintptr
-	__unusedxBegin        uintptr
-	__unusedxSync         uintptr
-	__unusedxCommit       uintptr
-	__unusedxRollback     uintptr
-	__unusedxFindFunction uintptr
-	__unusedxRename       uintptr
-	__unusedxSavepoint    uintptr
-	__unusedxRelease      uintptr
-	__unusedxRollbackTo   uintptr
-	__unusedxShadowName   uintptr
+type sqlite3_vtab_cursor = sqlite3_vtab_cursor1 /* sqlite3.h:6743:36 */
+type sqlite3_module1 = struct {
+	iVersion      int32
+	_             [4]byte
+	xCreate       uintptr
+	xConnect      uintptr
+	xBestIndex    uintptr
+	xDisconnect   uintptr
+	xDestroy      uintptr
+	xOpen         uintptr
+	xClose        uintptr
+	xFilter       uintptr
+	xNext         uintptr
+	xEof          uintptr
+	xColumn       uintptr
+	xRowid        uintptr
+	xUpdate       uintptr
+	xBegin        uintptr
+	xSync         uintptr
+	xCommit       uintptr
+	xRollback     uintptr
+	xFindFunction uintptr
+	xRename       uintptr
+	xSavepoint    uintptr
+	xRelease      uintptr
+	xRollbackTo   uintptr
+	xShadowName   uintptr
 } /* sqlite3.h:6741:9 */
 
-type __unusedsqlite3_module = __unusedsqlite3_module1 /* sqlite3.h:6744:31 */
+type sqlite3_module = sqlite3_module1 /* sqlite3.h:6744:31 */
 
 // CAPI3REF: Virtual Table Indexing Information
 // KEYWORDS: sqlite3_index_info
@@ -3391,12 +2832,12 @@ type __unusedsqlite3_module = __unusedsqlite3_module1 /* sqlite3.h:6744:31 */
 // It may therefore only be used if
 // sqlite3_libversion_number() returns a value greater than or equal to
 // 3009000.
-type __unusedsqlite3_index_constraint = struct {
-	__unusediColumn     int32
-	__unusedop          uint8
-	__unusedusable      uint8
-	_                   [2]byte
-	__unusediTermOffset int32
+type sqlite3_index_constraint = struct {
+	iColumn     int32
+	op          uint8
+	usable      uint8
+	_           [2]byte
+	iTermOffset int32
 } /* sqlite3.h:6742:9 */
 
 // CAPI3REF: Virtual Table Indexing Information
@@ -3499,10 +2940,10 @@ type __unusedsqlite3_index_constraint = struct {
 // It may therefore only be used if
 // sqlite3_libversion_number() returns a value greater than or equal to
 // 3009000.
-type __unusedsqlite3_index_orderby = struct {
-	__unusediColumn int32
-	__unuseddesc    uint8
-	_               [3]byte
+type sqlite3_index_orderby = struct {
+	iColumn int32
+	desc    uint8
+	_       [3]byte
 } /* sqlite3.h:6742:9 */
 
 // CAPI3REF: Virtual Table Indexing Information
@@ -3605,10 +3046,10 @@ type __unusedsqlite3_index_orderby = struct {
 // It may therefore only be used if
 // sqlite3_libversion_number() returns a value greater than or equal to
 // 3009000.
-type __unusedsqlite3_index_constraint_usage = struct {
-	__unusedargvIndex int32
-	__unusedomit      uint8
-	_                 [3]byte
+type sqlite3_index_constraint_usage = struct {
+	argvIndex int32
+	omit      uint8
+	_         [3]byte
 } /* sqlite3.h:6742:9 */
 
 // CAPI3REF: Mutex Methods Object
@@ -3674,16 +3115,16 @@ type __unusedsqlite3_index_constraint_usage = struct {
 // called, but only if the prior call to xMutexInit returned SQLITE_OK.
 // If xMutexInit fails in any way, it is expected to clean up after itself
 // prior to returning.
-type __unusedsqlite3_mutex_methods1 = struct {
-	__unusedxMutexInit    uintptr
-	__unusedxMutexEnd     uintptr
-	__unusedxMutexAlloc   uintptr
-	__unusedxMutexFree    uintptr
-	__unusedxMutexEnter   uintptr
-	__unusedxMutexTry     uintptr
-	__unusedxMutexLeave   uintptr
-	__unusedxMutexHeld    uintptr
-	__unusedxMutexNotheld uintptr
+type sqlite3_mutex_methods1 = struct {
+	xMutexInit    uintptr
+	xMutexEnd     uintptr
+	xMutexAlloc   uintptr
+	xMutexFree    uintptr
+	xMutexEnter   uintptr
+	xMutexTry     uintptr
+	xMutexLeave   uintptr
+	xMutexHeld    uintptr
+	xMutexNotheld uintptr
 } /* sqlite3.h:7576:9 */
 
 // CAPI3REF: Mutex Methods Object
@@ -3749,7 +3190,7 @@ type __unusedsqlite3_mutex_methods1 = struct {
 // called, but only if the prior call to xMutexInit returned SQLITE_OK.
 // If xMutexInit fails in any way, it is expected to clean up after itself
 // prior to returning.
-type __unusedsqlite3_mutex_methods = __unusedsqlite3_mutex_methods1 /* sqlite3.h:7576:38 */
+type sqlite3_mutex_methods = sqlite3_mutex_methods1 /* sqlite3.h:7576:38 */
 
 // CAPI3REF: Custom Page Cache Object
 //
@@ -3759,9 +3200,9 @@ type __unusedsqlite3_mutex_methods = __unusedsqlite3_mutex_methods1 /* sqlite3.h
 // of this object as parameters or as their return value.
 //
 // See [sqlite3_pcache_methods2] for additional information.
-type __unusedsqlite3_pcache_page1 = struct {
-	__unusedpBuf   uintptr
-	__unusedpExtra uintptr
+type sqlite3_pcache_page1 = struct {
+	pBuf   uintptr
+	pExtra uintptr
 } /* sqlite3.h:8330:9 */
 
 // CAPI3REF: Custom Page Cache Object
@@ -3772,7 +3213,7 @@ type __unusedsqlite3_pcache_page1 = struct {
 // of this object as parameters or as their return value.
 //
 // See [sqlite3_pcache_methods2] for additional information.
-type __unusedsqlite3_pcache_page = __unusedsqlite3_pcache_page1 /* sqlite3.h:8330:36 */
+type sqlite3_pcache_page = sqlite3_pcache_page1 /* sqlite3.h:8330:36 */
 
 // CAPI3REF: Application Defined Page Cache.
 // KEYWORDS: {page cache}
@@ -3931,21 +3372,21 @@ type __unusedsqlite3_pcache_page = __unusedsqlite3_pcache_page1 /* sqlite3.h:833
 // free up as much of heap memory as possible.  The page cache implementation
 // is not obligated to free any memory, but well-behaved implementations should
 // do their best.
-type __unusedsqlite3_pcache_methods21 = struct {
-	__unusediVersion   int32
-	_                  [4]byte
-	__unusedpArg       uintptr
-	__unusedxInit      uintptr
-	__unusedxShutdown  uintptr
-	__unusedxCreate    uintptr
-	__unusedxCachesize uintptr
-	__unusedxPagecount uintptr
-	__unusedxFetch     uintptr
-	__unusedxUnpin     uintptr
-	__unusedxRekey     uintptr
-	__unusedxTruncate  uintptr
-	__unusedxDestroy   uintptr
-	__unusedxShrink    uintptr
+type sqlite3_pcache_methods21 = struct {
+	iVersion   int32
+	_          [4]byte
+	pArg       uintptr
+	xInit      uintptr
+	xShutdown  uintptr
+	xCreate    uintptr
+	xCachesize uintptr
+	xPagecount uintptr
+	xFetch     uintptr
+	xUnpin     uintptr
+	xRekey     uintptr
+	xTruncate  uintptr
+	xDestroy   uintptr
+	xShrink    uintptr
 } /* sqlite3.h:8495:9 */
 
 // CAPI3REF: Application Defined Page Cache.
@@ -4105,29 +3546,29 @@ type __unusedsqlite3_pcache_methods21 = struct {
 // free up as much of heap memory as possible.  The page cache implementation
 // is not obligated to free any memory, but well-behaved implementations should
 // do their best.
-type __unusedsqlite3_pcache_methods2 = __unusedsqlite3_pcache_methods21 /* sqlite3.h:8495:40 */
+type sqlite3_pcache_methods2 = sqlite3_pcache_methods21 /* sqlite3.h:8495:40 */
 
 // This is the obsolete pcache_methods object that has now been replaced
 // by sqlite3_pcache_methods2.  This object is not used by SQLite.  It is
 // retained in the header file for backwards compatibility only.
-type __unusedsqlite3_pcache_methods1 = struct {
-	__unusedpArg       uintptr
-	__unusedxInit      uintptr
-	__unusedxShutdown  uintptr
-	__unusedxCreate    uintptr
-	__unusedxCachesize uintptr
-	__unusedxPagecount uintptr
-	__unusedxFetch     uintptr
-	__unusedxUnpin     uintptr
-	__unusedxRekey     uintptr
-	__unusedxTruncate  uintptr
-	__unusedxDestroy   uintptr
+type sqlite3_pcache_methods1 = struct {
+	pArg       uintptr
+	xInit      uintptr
+	xShutdown  uintptr
+	xCreate    uintptr
+	xCachesize uintptr
+	xPagecount uintptr
+	xFetch     uintptr
+	xUnpin     uintptr
+	xRekey     uintptr
+	xTruncate  uintptr
+	xDestroy   uintptr
 } /* sqlite3.h:8518:9 */
 
 // This is the obsolete pcache_methods object that has now been replaced
 // by sqlite3_pcache_methods2.  This object is not used by SQLite.  It is
 // retained in the header file for backwards compatibility only.
-type __unusedsqlite3_pcache_methods = __unusedsqlite3_pcache_methods1 /* sqlite3.h:8518:39 */
+type sqlite3_pcache_methods = sqlite3_pcache_methods1 /* sqlite3.h:8518:39 */
 
 // CAPI3REF: Database Snapshot
 // KEYWORDS: {snapshot} {sqlite3_snapshot}
@@ -4147,7 +3588,7 @@ type __unusedsqlite3_pcache_methods = __unusedsqlite3_pcache_methods1 /* sqlite3
 // version of the database file so that it is possible to later open a new read
 // transaction that sees that historical version of the database rather than
 // the most recent version.
-type __unusedsqlite3_snapshot1 = struct{ __unusedhidden [48]uint8 } /* sqlite3.h:9575:9 */
+type sqlite3_snapshot1 = struct{ hidden [48]uint8 } /* sqlite3.h:9575:9 */
 
 // CAPI3REF: Database Snapshot
 // KEYWORDS: {snapshot} {sqlite3_snapshot}
@@ -4167,7 +3608,7 @@ type __unusedsqlite3_snapshot1 = struct{ __unusedhidden [48]uint8 } /* sqlite3.h
 // version of the database file so that it is possible to later open a new read
 // transaction that sees that historical version of the database rather than
 // the most recent version.
-type __unusedsqlite3_snapshot = __unusedsqlite3_snapshot1 /* sqlite3.h:9577:3 */
+type sqlite3_snapshot = sqlite3_snapshot1 /* sqlite3.h:9577:3 */
 
 // CAPI3REF: Flags for sqlite3_deserialize()
 //
@@ -4204,13 +3645,13 @@ type __unusedsqlite3_snapshot = __unusedsqlite3_snapshot1 /* sqlite3.h:9577:3 */
 //
 //
 
-type __unusedsqlite3_rtree_geometry1 = struct {
-	__unusedpContext uintptr
-	__unusednParam   int32
-	_                [4]byte
-	__unusedaParam   uintptr
-	__unusedpUser    uintptr
-	__unusedxDelUser uintptr
+type sqlite3_rtree_geometry1 = struct {
+	pContext uintptr
+	nParam   int32
+	_        [4]byte
+	aParam   uintptr
+	pUser    uintptr
+	xDelUser uintptr
 } /* sqlite3.h:9902:9 */
 
 // CAPI3REF: Flags for sqlite3_deserialize()
@@ -4248,33 +3689,33 @@ type __unusedsqlite3_rtree_geometry1 = struct {
 //
 //
 
-type __unusedsqlite3_rtree_geometry = __unusedsqlite3_rtree_geometry1 /* sqlite3.h:9902:39 */
-type __unusedsqlite3_rtree_query_info1 = struct {
-	__unusedpContext      uintptr
-	__unusednParam        int32
-	_                     [4]byte
-	__unusedaParam        uintptr
-	__unusedpUser         uintptr
-	__unusedxDelUser      uintptr
-	__unusedaCoord        uintptr
-	__unusedanQueue       uintptr
-	__unusednCoord        int32
-	__unusediLevel        int32
-	__unusedmxLevel       int32
-	_                     [4]byte
-	__unusediRowid        __unusedsqlite3_int64
-	__unusedrParentScore  __unusedsqlite3_rtree_dbl
-	__unusedeParentWithin int32
-	__unusedeWithin       int32
-	__unusedrScore        __unusedsqlite3_rtree_dbl
-	__unusedapSqlParam    uintptr
+type sqlite3_rtree_geometry = sqlite3_rtree_geometry1 /* sqlite3.h:9902:39 */
+type sqlite3_rtree_query_info1 = struct {
+	pContext      uintptr
+	nParam        int32
+	_             [4]byte
+	aParam        uintptr
+	pUser         uintptr
+	xDelUser      uintptr
+	aCoord        uintptr
+	anQueue       uintptr
+	nCoord        int32
+	iLevel        int32
+	mxLevel       int32
+	_             [4]byte
+	iRowid        sqlite3_int64
+	rParentScore  sqlite3_rtree_dbl
+	eParentWithin int32
+	eWithin       int32
+	rScore        sqlite3_rtree_dbl
+	apSqlParam    uintptr
 } /* sqlite3.h:9903:9 */
 
-type __unusedsqlite3_rtree_query_info = __unusedsqlite3_rtree_query_info1 /* sqlite3.h:9903:41 */
+type sqlite3_rtree_query_info = sqlite3_rtree_query_info1 /* sqlite3.h:9903:41 */
 
 // The double-precision datatype used by RTree depends on the
 // SQLITE_RTREE_INT_ONLY compile-time option.
-type __unusedsqlite3_rtree_dbl = float64 /* sqlite3.h:9911:18 */
+type sqlite3_rtree_dbl = float64 /* sqlite3.h:9911:18 */
 
 // Allowed values for sqlite3_rtree_query.eWithin and .eParentWithin.
 
@@ -4307,28 +3748,28 @@ type __unusedsqlite3_rtree_dbl = float64 /* sqlite3.h:9911:18 */
 // Virtual table implementations may overload SQL functions by implementing
 // the sqlite3_module.xFindFunction() method.
 
-type __unusedFts5ExtensionApi1 = struct {
-	__unusediVersion           int32
-	_                          [4]byte
-	__unusedxUserData          uintptr
-	__unusedxColumnCount       uintptr
-	__unusedxRowCount          uintptr
-	__unusedxColumnTotalSize   uintptr
-	__unusedxTokenize          uintptr
-	__unusedxPhraseCount       uintptr
-	__unusedxPhraseSize        uintptr
-	__unusedxInstCount         uintptr
-	__unusedxInst              uintptr
-	__unusedxRowid             uintptr
-	__unusedxColumnText        uintptr
-	__unusedxColumnSize        uintptr
-	__unusedxQueryPhrase       uintptr
-	__unusedxSetAuxdata        uintptr
-	__unusedxGetAuxdata        uintptr
-	__unusedxPhraseFirst       uintptr
-	__unusedxPhraseNext        uintptr
-	__unusedxPhraseFirstColumn uintptr
-	__unusedxPhraseNextColumn  uintptr
+type fts5ExtensionApi1 = struct {
+	iVersion           int32
+	_                  [4]byte
+	xUserData          uintptr
+	xColumnCount       uintptr
+	xRowCount          uintptr
+	xColumnTotalSize   uintptr
+	xTokenize          uintptr
+	xPhraseCount       uintptr
+	xPhraseSize        uintptr
+	xInstCount         uintptr
+	xInst              uintptr
+	xRowid             uintptr
+	xColumnText        uintptr
+	xColumnSize        uintptr
+	xQueryPhrase       uintptr
+	xSetAuxdata        uintptr
+	xGetAuxdata        uintptr
+	xPhraseFirst       uintptr
+	xPhraseNext        uintptr
+	xPhraseFirstColumn uintptr
+	xPhraseNextColumn  uintptr
 } /* sqlite3.h:11697:9 */
 
 // Allowed values for sqlite3_rtree_query.eWithin and .eParentWithin.
@@ -4362,22 +3803,22 @@ type __unusedFts5ExtensionApi1 = struct {
 // Virtual table implementations may overload SQL functions by implementing
 // the sqlite3_module.xFindFunction() method.
 
-type __unusedFts5ExtensionApi = __unusedFts5ExtensionApi1 /* sqlite3.h:11697:33 */
-type __unusedFts5PhraseIter1 = struct {
-	__unuseda uintptr
-	__unusedb uintptr
+type fts5ExtensionApi = fts5ExtensionApi1 /* sqlite3.h:11697:33 */
+type fts5PhraseIter1 = struct {
+	a uintptr
+	b uintptr
 } /* sqlite3.h:11699:9 */
 
-type __unusedFts5PhraseIter = __unusedFts5PhraseIter1 /* sqlite3.h:11699:31 */
+type fts5PhraseIter = fts5PhraseIter1 /* sqlite3.h:11699:31 */
 
-type __unusedfts5_extension_function = uintptr /* sqlite3.h:11701:14 */
-type __unusedfts5_tokenizer1 = struct {
-	__unusedxCreate   uintptr
-	__unusedxDelete   uintptr
-	__unusedxTokenize uintptr
+type fts5_extension_function = uintptr /* sqlite3.h:11701:14 */
+type fts5_tokenizer1 = struct {
+	xCreate   uintptr
+	xDelete   uintptr
+	xTokenize uintptr
 } /* sqlite3.h:12160:9 */
 
-type __unusedfts5_tokenizer = __unusedfts5_tokenizer1 /* sqlite3.h:12160:31 */
+type fts5_tokenizer = fts5_tokenizer1 /* sqlite3.h:12160:31 */
 
 // Flags that may be passed as the third argument to xTokenize()
 
@@ -4391,12 +3832,12 @@ type __unusedfts5_tokenizer = __unusedfts5_tokenizer1 /* sqlite3.h:12160:31 */
 // ************************************************************************
 //
 // FTS5 EXTENSION REGISTRATION API
-type __unusedfts5_api1 = struct {
-	__unusediVersion         int32
-	_                        [4]byte
-	__unusedxCreateTokenizer uintptr
-	__unusedxFindTokenizer   uintptr
-	__unusedxCreateFunction  uintptr
+type fts5_api1 = struct {
+	iVersion         int32
+	_                [4]byte
+	xCreateTokenizer uintptr
+	xFindTokenizer   uintptr
+	xCreateFunction  uintptr
 } /* sqlite3.h:12196:9 */
 
 // Flags that may be passed as the third argument to xTokenize()
@@ -4411,7 +3852,7 @@ type __unusedfts5_api1 = struct {
 // ************************************************************************
 //
 // FTS5 EXTENSION REGISTRATION API
-type __unusedfts5_api = __unusedfts5_api1 /* sqlite3.h:12196:25 */
+type fts5_api = fts5_api1 /* sqlite3.h:12196:25 */
 
 // POSIX.1-2008 extended locale interface (see locale.h).
 // Definition of locale_t.
@@ -4456,19 +3897,19 @@ type __unusedfts5_api = __unusedfts5_api1 /* sqlite3.h:12196:25 */
 //    as opaque by applications; some details are exposed for the sake of
 //    efficiency in e.g. ctype functions.
 
-type __unused__locale_struct = struct {
-	__unused__locales       [13]uintptr
-	__unused__ctype_b       uintptr
-	__unused__ctype_tolower uintptr
-	__unused__ctype_toupper uintptr
-	__unused__names         [13]uintptr
+type __locale_struct = struct {
+	__locales       [13]uintptr
+	__ctype_b       uintptr
+	__ctype_tolower uintptr
+	__ctype_toupper uintptr
+	__names         [13]uintptr
 } /* __locale_t.h:28:1 */
 
-type __unused__locale_t = uintptr /* __locale_t.h:42:32 */
+type __locale_t = uintptr /* __locale_t.h:42:32 */
 
-type __unusedlocale_t = __unused__locale_t /* locale_t.h:24:20 */
+type locale_t = __locale_t /* locale_t.h:24:20 */
 
-func __unusedprepareReading1(tls *libc.TLS, filename uintptr, n int32) uintptr { /* bench.c:6:8: */
+func prepareReading(tls *libc.TLS, filename uintptr, n int32) uintptr { /* bench.c:6:8: */
 	bp := tls.Alloc(48)
 	defer tls.Free(48)
 
@@ -4523,7 +3964,7 @@ func __unusedprepareReading1(tls *libc.TLS, filename uintptr, n int32) uintptr {
 	}
 	return *(*uintptr)(unsafe.Pointer(bp + 24 /* DB */))
 }
-func __unusedreading1native(tls *libc.TLS, DB uintptr, n int32) { /* bench.c:58:6: */
+func reading(tls *libc.TLS, DB uintptr, n int32) { /* bench.c:58:6: */
 	bp := tls.Alloc(24)
 	defer tls.Free(24)
 
@@ -4551,5 +3992,78 @@ func __unusedreading1native(tls *libc.TLS, DB uintptr, n int32) { /* bench.c:58:
 	return
 }
 
-var ts1 = "failed to open!!\n\x00create table t(i int);begin;\x00failed to create table!!: %s\n\x00insert into t values(?)\x00failed to prepare inserting!!\n\x00failed to bind value!!\n\x00failed to create table!!\n\x00commit\x00failed to commit!!: %s\n\x00select * from t\x00failed prepare select!!:%s\n\x00failed to read from table!!:%s\n\x00"
+func prepareInsertComparative(tls *libc.TLS, filename uintptr, n int32) uintptr { /* bench.c:83:8: */
+	bp := tls.Alloc(32)
+	defer tls.Free(32)
+
+	// var DB uintptr at bp+16, 8
+
+	var exit int32 = 0
+	// var messaggeError uintptr at bp+24, 8
+
+	sqlite3.Xsqlite3_config(tls, 17, libc.VaList(bp, 1))
+	exit = sqlite3.Xsqlite3_open(tls, filename, bp+16 /* &DB */)
+	if exit != 0 {
+		libc.Xprintf(tls, ts /* "failed to open!!..." */, 0)
+		sqlite3.Xsqlite3_close(tls, *(*uintptr)(unsafe.Pointer(bp + 16 /* DB */)))
+		return uintptr(0)
+	}
+	var sql uintptr = ts + 289 /* "create table t(i..." */
+	exit = sqlite3.Xsqlite3_exec(tls, *(*uintptr)(unsafe.Pointer(bp + 16 /* DB */)), sql, uintptr(0), uintptr(0), bp+24 /* &messaggeError */)
+	if exit != 0 {
+		libc.Xprintf(tls, ts+47 /* "failed to create..." */, libc.VaList(bp+8, *(*uintptr)(unsafe.Pointer(bp + 24 /* messaggeError */))))
+		sqlite3.Xsqlite3_close(tls, *(*uintptr)(unsafe.Pointer(bp + 16 /* DB */)))
+		return uintptr(0)
+	}
+	return *(*uintptr)(unsafe.Pointer(bp + 16 /* DB */))
+}
+func insertComparative(tls *libc.TLS, DB uintptr, n int32) { /* bench.c:105:6: */
+	bp := tls.Alloc(32)
+	defer tls.Free(32)
+
+	var exit int32 = 0
+	// var messaggeError uintptr at bp+16, 8
+
+	// var stm uintptr at bp+24, 8
+
+	var sql uintptr = ts + 312 /* "begin;delete fro..." */
+	exit = sqlite3.Xsqlite3_exec(tls, DB, sql, uintptr(0), uintptr(0), bp+16 /* &messaggeError */)
+	if exit != 0 {
+		libc.Xprintf(tls, ts+333 /* "start transactio..." */, libc.VaList(bp, *(*uintptr)(unsafe.Pointer(bp + 16 /* messaggeError */))))
+		sqlite3.Xsqlite3_close(tls, DB)
+		return
+	}
+
+	sql = ts + 77 /* "insert into t va..." */
+	if sqlite3.Xsqlite3_prepare_v2(tls, DB, sql, -1, bp+24 /* &stm */, uintptr(0)) != 0 {
+		libc.Xprintf(tls, ts+101 /* "failed to prepar..." */, 0)
+		sqlite3.Xsqlite3_close(tls, DB)
+		return
+	}
+	var i int32
+	for i = 0; i < n; i++ {
+		if sqlite3.Xsqlite3_bind_int(tls, *(*uintptr)(unsafe.Pointer(bp + 24 /* stm */)), 1, i) != 0 {
+			libc.Xprintf(tls, ts+132 /* "failed to bind v..." */, 0)
+			sqlite3.Xsqlite3_close(tls, DB)
+			return
+		}
+		if sqlite3.Xsqlite3_step(tls, *(*uintptr)(unsafe.Pointer(bp + 24 /* stm */))) != 101 {
+			libc.Xprintf(tls, ts+156 /* "failed to create..." */, 0)
+			sqlite3.Xsqlite3_close(tls, DB)
+			return
+		}
+		sqlite3.Xsqlite3_reset(tls, *(*uintptr)(unsafe.Pointer(bp + 24 /* stm */)))
+	}
+	sqlite3.Xsqlite3_finalize(tls, *(*uintptr)(unsafe.Pointer(bp + 24 /* stm */)))
+	sql = ts + 182 /* "commit" */
+	exit = sqlite3.Xsqlite3_exec(tls, DB, sql, uintptr(0), uintptr(0), bp+16 /* &messaggeError */)
+	if exit != 0 {
+		libc.Xprintf(tls, ts+189 /* "failed to commit..." */, libc.VaList(bp+8, *(*uintptr)(unsafe.Pointer(bp + 16 /* messaggeError */))))
+		sqlite3.Xsqlite3_close(tls, DB)
+		return
+	}
+	return
+}
+
+var ts1 = "failed to open!!\n\x00create table t(i int);begin;\x00failed to create table!!: %s\n\x00insert into t values(?)\x00failed to prepare inserting!!\n\x00failed to bind value!!\n\x00failed to create table!!\n\x00commit\x00failed to commit!!: %s\n\x00select * from t\x00failed prepare select!!:%s\n\x00failed to read from table!!:%s\n\x00create table t(i int);\x00begin;delete from t;\x00start transaction!!: %s\n\x00"
 var ts = (*reflect.StringHeader)(unsafe.Pointer(&ts1)).Data

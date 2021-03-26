@@ -9,12 +9,12 @@ package sqlite
 // #cgo LDFLAGS: -lsqlite3
 // #include <stdlib.h>
 // #include <sqlite3.h>
+// #include "cbench/bench.c"
 //
 // sqlite3* prepareReading(char * filename, int n);
 // void reading(sqlite3 *DB, int n);
 // sqlite3* prepareInsertComparative(char * filename, int n);
 // void insertComparative(sqlite3 *DB, int n);
-// #include <stdio.h>
 import "C"
 import (
 	"testing"
@@ -24,22 +24,22 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func reading1NativeC(b *testing.B, filename string, n int) {
+func benchmarkReadNativeC(b *testing.B, filename string, n int) {
 	cs := C.CString(filename)
-	db := C.prepareReading1(cs, C.int(n))
+	db := C.prepareReading(cs, C.int(n))
 	C.free(unsafe.Pointer(cs))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		C.reading1native(db, C.int(n))
+		C.reading(db, C.int(n))
 	}
 	b.StopTimer()
 	C.sqlite3_close(db)
 }
 
-func reading1NativeGO(b *testing.B, filename string, n int) {
+func benchmarkReadNativeGO(b *testing.B, filename string, n int) {
 	tls := libc.NewTLS()
 	cs := C.CString(filename)
-	db := prepareReading1(tls, uintptr(unsafe.Pointer(cs)), int32(n))
+	db := prepareReading(tls, uintptr(unsafe.Pointer(cs)), int32(n))
 	C.free(unsafe.Pointer(cs))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

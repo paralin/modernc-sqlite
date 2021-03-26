@@ -3,7 +3,7 @@
 #include <sqlite3.h>
 #include <string.h>
 
-sqlite3* prepareReading1(char * filename, int n)
+sqlite3* prepareReading(char * filename, int n)
 {
    sqlite3* DB;
    int exit = 0;
@@ -55,18 +55,14 @@ sqlite3* prepareReading1(char * filename, int n)
    }
    return DB;
 }
-<<<<<<< HEAD
 void reading(sqlite3 *DB, int n)
-=======
-void reading1native(sqlite3 *DB, int n)
->>>>>>> 19da7d8 (add go native benchmark)
 {
    int exit = 0;
    sqlite3_stmt *stm;
 
    char *sql = "select * from t";
    if (sqlite3_prepare_v2(DB, sql, -1, &stm, NULL) != SQLITE_OK) {
-       printf("failed prepare select!!:%s\n", sqlite3_errmsg(DB));
+       printf("failed prepare select!!2:%s\n", sqlite3_errmsg(DB));
        sqlite3_close(DB);
        return;
    }
@@ -82,7 +78,6 @@ void reading1native(sqlite3 *DB, int n)
    sqlite3_finalize(stm);
    return;
 }
-<<<<<<< HEAD
 
 
 sqlite3* prepareInsertComparative(char * filename, int n)
@@ -152,5 +147,3 @@ void insertComparative(sqlite3 *DB, int n)
    }
    return;
 } 
-=======
->>>>>>> 19da7d8 (add go native benchmark)
