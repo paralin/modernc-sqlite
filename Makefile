@@ -165,6 +165,3 @@ tclshort:
 	grep -c '\.\.\. \?Ok' log || true
 	grep -c '^!' log || true
 	# grep -c 'Error:' log || true
-
-generate_go_native:
-	ccgo -o bench.go bench.c -lmodernc.org/sqlite/lib -pkgname sqlite -unexported-by-default -nocapi
