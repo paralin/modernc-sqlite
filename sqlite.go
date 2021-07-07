@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -723,6 +724,10 @@ type conn struct {
 }
 
 func newConn(name string) (*conn, error) {
+	u, err := url.Parse(name)
+	if err != nil {
+		return nil, err
+	}
 	c := &conn{tls: libc.NewTLS()}
 	db, err := c.openV2(
 		name,
@@ -738,6 +743,14 @@ func newConn(name string) (*conn, error) {
 	if err = c.extendedResultCodes(true); err != nil {
 		c.Close()
 		return nil, err
+	}
+
+	for _, v := range u.Query()["_pragma"] {
+		_, err := c.exec(context.Background(), "pragma " + v, nil)
+		if err != nil {
+			c.Close()
+			return nil, err
+		}
 	}
 
 	return c, nil
