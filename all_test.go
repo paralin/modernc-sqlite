@@ -8,10 +8,12 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -1572,6 +1574,68 @@ CREATE TABLE IF NOT EXISTS loginst (
 		}
 	}
 
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/37
+func TestPersistPragma(t *testing.T) {
+	if err := emptyDir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.Chdir(wd)
+
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+
+	u, err := url.Parse("x.sqlite")
+	if err != nil {
+		t.Fatal(err)
+	}
+	q := u.Query()
+	q.Add("_pragma", "foreign_keys=on")
+	u.RawQuery = q.Encode()
+	
+	dbPath := u.String()
+	os.Remove(dbPath)
+	db, err := sql.Open(driverName, dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db.SetMaxOpenConns(1)
+
+	row := db.QueryRow(`PRAGMA foreign_keys;`)
+
+	var fkOn bool
+	if err := row.Scan(&fkOn); err != nil {
+		t.Fatal(err)
+	}
+	if !fkOn {
+		t.Fatal(fmt.Errorf("expected PRAGMA foreign_keys to return true"))
+	}
+
+	c, err := db.Conn(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Kill the connection to spawn a new one
+	c.Raw(func(interface{}) error { return driver.ErrBadConn })
+
+	row = db.QueryRow(`PRAGMA foreign_keys;`)
+
+	if err := row.Scan(&fkOn); err != nil {
+		t.Fatal(err)
+	}
+	if !fkOn {
+		t.Fatal(fmt.Errorf("expected PRAGMA foreign_keys to return true"))
+	}
 }
 
 func emptyDir(s string) error {
