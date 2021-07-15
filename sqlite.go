@@ -730,7 +730,7 @@ func newConn(name string) (*conn, error) {
 	}
 	c := &conn{tls: libc.NewTLS()}
 	db, err := c.openV2(
-		name,
+		u.Path,
 		sqlite3.SQLITE_OPEN_READWRITE|sqlite3.SQLITE_OPEN_CREATE|
 			sqlite3.SQLITE_OPEN_FULLMUTEX|
 			sqlite3.SQLITE_OPEN_URI,
@@ -745,15 +745,23 @@ func newConn(name string) (*conn, error) {
 		return nil, err
 	}
 
+	if err = applyPragmas(c, u); err != nil {
+		c.Close()
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func applyPragmas(c *conn, u *url.URL) error {
 	for _, v := range u.Query()["_pragma"] {
 		_, err := c.exec(context.Background(), "pragma " + v, nil)
 		if err != nil {
 			c.Close()
-			return nil, err
+			return err
 		}
 	}
-
-	return c, nil
+	return nil
 }
 
 // const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
