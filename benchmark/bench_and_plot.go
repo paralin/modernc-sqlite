@@ -102,10 +102,12 @@ func main() {
 			}
 
 			// render graph into file
-			if err := os.MkdirAll("out", 0775); err != nil {
+			outputFilename := path.Join("out", fmt.Sprintf("%s_memory:%v.png", getFuncName(benchFunc), isMemoryDB))
+
+			if err := os.MkdirAll(path.Dir(outputFilename), 0775); err != nil {
 				log.Fatal(err)
 			}
-			f, err := os.Create(path.Join("out", fmt.Sprintf("%s_memory:%v.png", getFuncName(benchFunc), isMemoryDB)))
+			f, err := os.Create(outputFilename)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -114,6 +116,7 @@ func main() {
 			if err := graph.Render(chart.PNG, f); err != nil {
 				log.Fatal(err)
 			}
+			log.Printf("plot written into %s\n", outputFilename)
 		}
 	}
 }
