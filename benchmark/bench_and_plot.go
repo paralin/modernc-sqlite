@@ -63,7 +63,13 @@ func main() {
 				}
 
 				// add series to graph
-				graph.AddSeries(driver, seriesValues)
+				var seriesName string
+				if driver == "sqlite3" {
+					seriesName = "CGo"
+				} else {
+					seriesName = "Go"
+				}
+				graph.AddSeries(seriesName, seriesValues)
 			}
 
 			// render graph into file
