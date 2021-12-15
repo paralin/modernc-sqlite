@@ -1,3 +1,7 @@
+// Copyright 2021 The Sqlite Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // this file contains pure benchmark functions
 // these may be wrapped by different runners
 package main
@@ -7,7 +11,11 @@ import (
 	"testing"
 )
 
-var allBenchmarksOfNRows = []bechmarkOfNRows{benchmarkInsert, benchmarkSelect}
+// all benchmark of N functions to be run
+var allBenchmarksOfNRows = []bechmarkOfNRows{
+	benchmarkInsert,
+	benchmarkSelect,
+}
 
 // bechmarkOfNRows is a type for a function that is benchmarking something depending on rows count.
 type bechmarkOfNRows func(b *testing.B, db *sql.DB, nRows int)
