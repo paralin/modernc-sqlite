@@ -225,12 +225,12 @@ var DarkPalette = &palette{
 }
 
 var LightPalette = &palette{
-	canvasColor:     drawing.ColorFromHex("eee8d5"),
-	bgColor:         drawing.ColorFromHex("fdf6e3"),
-	textColor:       drawing.ColorFromHex("333333").WithAlpha(128),
-	axisStrokeColor: drawing.ColorFromHex("333333").WithAlpha(128),
+	canvasColor:     drawing.ColorFromHex("f2f2f2"),
+	bgColor:         drawing.ColorFromHex("f5f5f5"),
+	textColor:       drawing.ColorFromHex("393939").WithAlpha(128),
+	axisStrokeColor: drawing.ColorFromHex("393939").WithAlpha(128),
 	seriesColor: []drawing.Color{
-		drawing.ColorFromHex("8b9e0c"),
-		drawing.ColorFromHex("2d8ed3"),
+		drawing.ColorFromHex("aa3731"),
+		drawing.ColorFromHex("5a77c7"),
 	},
 }
