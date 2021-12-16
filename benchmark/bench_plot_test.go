@@ -5,25 +5,46 @@
 package benchmark
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
 	"math/rand"
+	"os"
 	"path"
 	"testing"
 )
 
-// debug is only for development, to test plotting
-var debug = false
+var (
+	// in dryRun we just generate random values to quickly see how information is plotted
+	dryRun bool
+
+	// whethe to use dark palette when plotting results
+	darkPalette bool
+)
+
+func TestMain(m *testing.M) {
+	flag.BoolVar(&dryRun, "dry", false, "just generate random values to quickly see how information is plotted")
+	flag.BoolVar(&darkPalette, "dark", false, "use dark palette when plotting")
+	flag.Parse()
+	os.Exit(m.Run())
+}
 
 func TestBenchmarkAndPlot(t *testing.T) {
+	// choose palette for plottin
+	var palette = LightPalette
+	if darkPalette {
+		palette = DarkPalette
+	}
+
 	for _, benchFunc := range allBenchmarksOfNRows {
 		for _, isMemoryDB := range inMemory {
+
 			// create graph
 			graph := &GraphCompareOfNRows{
 				title:      fmt.Sprintf("%s | In-Memory: %v", getFuncName(benchFunc), isMemoryDB),
 				rowCountsE: rowCountsE,
-				palette:    LightPalette,
+				palette:    palette,
 			}
 
 			// drivers
@@ -36,8 +57,8 @@ func TestBenchmarkAndPlot(t *testing.T) {
 
 				// number of rows in table
 				for _, e := range rowCountsE {
-					if debug {
-						// in debug mode we just generate random value to quickly see how information is plotted
+					if dryRun {
+						// in dryRun mode we just generate random value to quickly see how information is plotted
 						rowsPerSec = rand.Float64() * 200000
 					} else {
 						// run benchmark

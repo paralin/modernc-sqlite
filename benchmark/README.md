@@ -8,18 +8,24 @@ go test -bench .
 
 ## Doing benchmarks with alternative runner to plot results
 ```console
-go run .
+go test -v .
+```
+Dark color scheme:
+```console
+go test -v . -dark
 ```
 
 ### my results:
 
 #### Insert
-![](out/benchmarkInsert_memory:false.png)
-![](out/benchmarkInsert_memory:true.png)
+| On disk                                   | In memory                                |
+| :---------------------------------------- | :--------------------------------------- |
+| ![](out/benchmarkInsert_memory:false.png) | ![](out/benchmarkInsert_memory:true.png) |
 
 #### Select
-![](out/benchmarkSelect_memory:false.png)
-![](out/benchmarkSelect_memory:true.png)
+| On disk                                   | In memory                                |
+| :---------------------------------------- | :--------------------------------------- |
+| ![](out/benchmarkSelect_memory:false.png) | ![](out/benchmarkSelect_memory:true.png) |
 
 ## Adding benchmarks
 A specific type of benchmark function is currently automated:
@@ -30,7 +36,10 @@ type bechmarkOfNRows func(b *testing.B, db *sql.DB, nRows int)
 You can implement benchmark functions of that type, then add them into ```allBenchmarksOfNRows``` variable (see [benchmarks.go](benchmarks.go))
 
 ```go
-var allBenchmarksOfNRows = []bechmarkOfNRows{benchmarkInsert, benchmarkSelect}
+var allBenchmarksOfNRows = []bechmarkOfNRows{
+	benchmarkInsert, 
+	benchmarkSelect,
+	}
 ```
 
 Elements of ```allBenchmarksOfNRows``` will be automatically evaluated and plotted when alternative plotting runner is used (e.g. ```go run .```)
