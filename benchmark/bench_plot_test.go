@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package benchmark
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 // debug is only for development, to test plotting
 var debug = false
 
-func main() {
+func TestBenchmarkAndPlot(t *testing.T) {
 	for _, benchFunc := range allBenchmarksOfNRows {
 		for _, isMemoryDB := range inMemory {
 			// create graph

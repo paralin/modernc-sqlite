@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // this file allows to run benchmarks via go test
-package main
+package benchmark
 
 import (
 	"math"

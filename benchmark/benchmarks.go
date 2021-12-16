@@ -4,7 +4,7 @@
 
 // this file contains pure benchmark functions
 // these may be wrapped by different runners
-package main
+package benchmark
 
 import (
 	"database/sql"

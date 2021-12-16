@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // helpers for plotting benchmark results
-package main
+package benchmark
 
 import (
 	"fmt"
