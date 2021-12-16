@@ -3,7 +3,7 @@ Generally, benchmarks are conducted against CGo implementation of SQLite (https:
 
 ## Doing benchmarks with go test command
 ```console
-go test -bench .
+go test -bench . -run '^$'
 ```
 
 ## Doing benchmarks with alternative runner to plot results

@@ -61,15 +61,16 @@ func TestBenchmarkAndPlot(t *testing.T) {
 						// in dryRun mode we just generate random value to quickly see how information is plotted
 						rowsPerSec = rand.Float64() * 200000
 					} else {
+						// create DB
+						db := createDB(t, isMemoryDB, driver)
+
 						// run benchmark
 						result := testing.Benchmark(func(b *testing.B) {
-							// create DB
-							db := createDB(b, isMemoryDB, driver)
-							defer db.Close()
-
-							// run bench
 							benchFunc(b, db, int(math.Pow10(e)))
 						})
+
+						// close DB
+						db.Close()
 
 						// calculate rows/sec
 						rowsPerSec = math.Pow10(e) * float64(result.N) / result.T.Seconds()
