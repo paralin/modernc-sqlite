@@ -205,7 +205,7 @@ type avgVal struct {
 }
 
 func (a *avgVal) contribFloat(v float64) {
-	nContrib = float64(a.numContributions)
+	nContrib := float64(a.numContributions)
 	a.val = (a.val*nContrib + v) / (nContrib + 1.)
 	a.numContributions++
 }
