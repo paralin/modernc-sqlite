@@ -1,4 +1,4 @@
-module github.com/glebarez/go-sqlite/benchmark
+module modernc.org/sqlite/benchmark
 
 go 1.17
 
