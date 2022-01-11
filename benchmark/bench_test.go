@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func Test_BenchmarkSQLite(t *testing.T) {
+func TestBenchmarkSQLite(t *testing.T) {
 	// print info about CPU and OS
 	fmt.Println()
 	fmt.Printf("goos:   %s\n", runtime.GOOS)
@@ -101,7 +101,7 @@ func Test_BenchmarkSQLite(t *testing.T) {
 
 		// print result row
 		fmt.Printf("%-35s | %5.2fx | CGo: %7.3f ms/op | Pure-Go: %7.3f ms/op\n",
-			getFuncName(f),
+			toSnakeCase(getFuncName(f)),
 			nsPerOpPureGo.val/nsPerOpCGo.val, // factor
 			nsPerOpCGo.val/1e6,               // ms/op
 			nsPerOpPureGo.val/1e6,            // ms/op

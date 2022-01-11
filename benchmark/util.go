@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"path"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -25,6 +26,17 @@ const (
 	// default name for test table
 	testTableName = "t1"
 )
+
+var (
+	matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")
+)
+
+func toSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
+}
 
 // mustExec executes SQL statements and panic if error occurs
 func mustExec(db *sql.DB, statements ...string) {
