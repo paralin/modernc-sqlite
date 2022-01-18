@@ -2136,3 +2136,52 @@ func TestConstraintUniqueError(t *testing.T) {
 		t.Fatalf("got error string %q, want %q", errs, want)
 	}
 }
+
+func TestSQLiteMath(t *testing.T) {
+	mathExpressions := []string{
+		`acos(-1)`,
+		`acosh(2)`,
+		`asin(-1)`,
+		`asinh(2)`,
+		`atan(1.5)`,
+		`atan2(3,2)`,
+		`atanh(-1)`,
+		`ceil(1.1)`,
+		`ceiling(1.1)`,
+		`cos(1)`,
+		`cosh(1)`,
+		`degrees(1)`,
+		`exp(1)`,
+		`floor(1.9)`,
+		`ln(1.1)`,
+		`log(10)`,
+		`log10(10)`,
+		`log(10,100)`,
+		`log2(9)`,
+		`mod(9,2)`,
+		`pi()`,
+		`pow(2,0)`,
+		`power(2,0)`,
+		`radians(57)`,
+		`sin(1)`,
+		`sinh(1)`,
+		`sqrt(4)`,
+		`tan(1)`,
+		`tanh(1)`,
+		`trunc(3.1)`,
+	}
+
+	db, err := sql.Open(driverName, "file::memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result float64
+	for _, expr := range mathExpressions {
+		row := db.QueryRow(fmt.Sprintf("select %s", expr))
+		if err := row.Scan(&result); err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		t.Logf("%s = %.3f\n", expr, result)
+	}
+}
