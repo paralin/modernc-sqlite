@@ -2208,3 +2208,35 @@ func TestBeginMode(t *testing.T) {
 		}
 	}
 }
+
+// https://gitlab.com/cznic/sqlite/-/issues/94
+func TestCancelRace(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		os.RemoveAll(tempDir)
+	}()
+
+	db, err := sql.Open("sqlite", filepath.Join(tempDir, "testcancelrace.sqlite"))
+	if err != nil {
+		t.Fatalf("Failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	// this is a race condition, so it's not guaranteed to fail on any given run,
+	// but with a moderate number of iterations it will eventually catch it
+	iterations := 100
+	for i := 0; i < iterations; i++ {
+		// none of these iterations should ever fail, because we never cancel their
+		// context until after they complete
+		ctx, cancel := context.WithCancel(context.Background())
+		_, err := db.ExecContext(ctx, "select 1")
+		if err != nil {
+			t.Fatalf("Failed to run test query on iteration %d: %v", i, err)
+		}
+		cancel()
+	}
+}
