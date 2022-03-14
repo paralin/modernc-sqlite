@@ -600,13 +600,20 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 		go func() {
 			select {
 			case <-ctx.Done():
-				atomic.AddInt32(&done, 1)
-				s.c.interrupt(s.c.db)
+				// don't call interrupt if we were already done: it indicates that this
+				// call to exec is no longer running and we would be interrupting
+				// nothing, or even possibly an unrelated later call to exec.
+				if atomic.AddInt32(&done, 1) == 1 {
+					s.c.interrupt(s.c.db)
+				}
 			case <-donech:
 			}
 		}()
 
 		defer func() {
+			// set the done flag so that a context cancellation right after we return
+			// doesn't trigger a call to interrupt for some other statement.
+			atomic.AddInt32(&done, 1)
 			close(donech)
 		}()
 	}
@@ -726,16 +733,25 @@ func (t *tx) exec(ctx context.Context, sql string) (err error) {
 
 	if ctx != nil && ctx.Done() != nil {
 		donech := make(chan struct{})
+		var done int32
 
 		go func() {
 			select {
 			case <-ctx.Done():
-				t.c.interrupt(t.c.db)
+				// don't call interrupt if we were already done: it indicates that this
+				// call to exec is no longer running and we would be interrupting
+				// nothing, or even possibly an unrelated later call to exec.
+				if atomic.AddInt32(&done, 1) == 1 {
+					t.c.interrupt(t.c.db)
+				}
 			case <-donech:
 			}
 		}()
 
 		defer func() {
+			// set the done flag so that a context cancellation right after we return
+			// doesn't trigger a call to interrupt for some other statement.
+			atomic.AddInt32(&done, 1)
 			close(donech)
 		}()
 	}
