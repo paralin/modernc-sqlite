@@ -749,6 +749,7 @@ type conn struct {
 
 	writeTimeFormat string
 	beginMode       string
+	udfs            map[string]*userDefinedFunction
 }
 
 func newConn(dsn string) (*conn, error) {
@@ -765,7 +766,7 @@ func newConn(dsn string) (*conn, error) {
 		}
 	}
 
-	c := &conn{tls: libc.NewTLS()}
+	c := &conn{tls: libc.NewTLS(), udfs: make(map[string]*userDefinedFunction)}
 	db, err := c.openV2(
 		dsn,
 		sqlite3.SQLITE_OPEN_READWRITE|sqlite3.SQLITE_OPEN_CREATE|
@@ -1317,6 +1318,35 @@ func (c *conn) Close() error {
 // int sqlite3_close_v2(sqlite3*);
 func (c *conn) closeV2(db uintptr) error {
 	if rc := sqlite3.Xsqlite3_close_v2(c.tls, db); rc != sqlite3.SQLITE_OK {
+		return c.errstr(rc)
+	}
+
+	return nil
+}
+
+type userDefinedFunction struct {
+	zFuncName uintptr
+	nArg      int32
+	eTextRep  int32
+	xFunc     func(*libc.TLS, uintptr, int32, uintptr)
+}
+
+func (c *conn) createFunctionInternal(fun userDefinedFunction) error {
+	c.Mutex.Lock()
+	c.udfs[libc.GoString(fun.zFuncName)] = &fun
+	c.Mutex.Unlock()
+
+	if rc := sqlite3.Xsqlite3_create_function(
+		c.tls,
+		c.db,
+		fun.zFuncName,
+		fun.nArg,
+		fun.eTextRep,
+		0,
+		*(*uintptr)(unsafe.Pointer(&fun.xFunc)),
+		0,
+		0,
+	); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
 	}
 
