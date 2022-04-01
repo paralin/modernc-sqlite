@@ -1308,6 +1308,14 @@ func (c *conn) Close() error {
 
 		c.db = 0
 	}
+
+	if c.udfs != nil {
+		for _, v := range c.udfs {
+			v.close(c.tls)
+		}
+		c.udfs = nil
+	}
+
 	if c.tls != nil {
 		c.tls.Close()
 		c.tls = nil
@@ -1329,12 +1337,28 @@ type userDefinedFunction struct {
 	nArg      int32
 	eTextRep  int32
 	xFunc     func(*libc.TLS, uintptr, int32, uintptr)
+
+	freeOnce sync.Once
 }
 
-func (c *conn) createFunctionInternal(fun userDefinedFunction) error {
+func (udf *userDefinedFunction) close(tls *libc.TLS) {
+	if udf == nil {
+		return
+	}
+	udf.freeOnce.Do(func() { libc.Xfree(tls, udf.zFuncName) })
+}
+
+func (c *conn) createFunctionInternal(fun *userDefinedFunction) error {
 	c.Mutex.Lock()
-	c.udfs[libc.GoString(fun.zFuncName)] = &fun
-	c.Mutex.Unlock()
+	defer c.Mutex.Unlock()
+
+	goZFuncName := libc.GoString(fun.zFuncName)
+
+	if prev, ok := c.udfs[goZFuncName]; ok {
+		prev.close(c.tls)
+		delete(c.udfs, goZFuncName)
+	}
+	c.udfs[goZFuncName] = fun
 
 	if rc := sqlite3.Xsqlite3_create_function(
 		c.tls,
@@ -1349,7 +1373,6 @@ func (c *conn) createFunctionInternal(fun userDefinedFunction) error {
 	); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
 	}
-
 	return nil
 }
 

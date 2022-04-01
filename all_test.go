@@ -217,6 +217,82 @@ func TestScalar(t *testing.T) {
 	}
 }
 
+func TestRedefineUserDefinedFunction(t *testing.T) {
+	dir, db := tempDB(t)
+	ctx := context.Background()
+
+	defer func() {
+		db.Close()
+		os.RemoveAll(dir)
+	}()
+
+	connection, err := db.Conn(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var r int
+	funName := "test"
+
+	if err = connection.Raw(func(driverConn interface{}) error {
+		c := driverConn.(*conn)
+
+		name, err := libc.CString(funName)
+		if err != nil {
+			return err
+		}
+
+		return c.createFunctionInternal(&userDefinedFunction{
+			zFuncName: name,
+			nArg:      0,
+			eTextRep:  sqlite3.SQLITE_UTF8 | sqlite3.SQLITE_DETERMINISTIC,
+			xFunc: func(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+				sqlite3.Xsqlite3_result_int(tls, ctx, 1)
+			},
+		})
+	}); err != nil {
+		t.Fatal(err)
+	}
+	row := connection.QueryRowContext(ctx, "select test()")
+
+	if err := row.Scan(&r); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := r, 1; g != e {
+		t.Fatal(g, e)
+	}
+
+	if err = connection.Raw(func(driverConn interface{}) error {
+		c := driverConn.(*conn)
+
+		name, err := libc.CString(funName)
+		if err != nil {
+			return err
+		}
+
+		return c.createFunctionInternal(&userDefinedFunction{
+			zFuncName: name,
+			nArg:      0,
+			eTextRep:  sqlite3.SQLITE_UTF8 | sqlite3.SQLITE_DETERMINISTIC,
+			xFunc: func(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+				sqlite3.Xsqlite3_result_int(tls, ctx, 2)
+			},
+		})
+	}); err != nil {
+		t.Fatal(err)
+	}
+	row = connection.QueryRowContext(ctx, "select test()")
+
+	if err := row.Scan(&r); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := r, 2; g != e {
+		t.Fatal(g, e)
+	}
+}
+
 func TestRegexpUserDefinedFunction(t *testing.T) {
 	dir, db := tempDB(t)
 	ctx := context.Background()
@@ -238,9 +314,8 @@ func TestRegexpUserDefinedFunction(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer libc.Xfree(c.tls, name)
 
-		return c.createFunctionInternal(userDefinedFunction{
+		return c.createFunctionInternal(&userDefinedFunction{
 			zFuncName: name,
 			nArg:      2,
 			eTextRep:  sqlite3.SQLITE_UTF8 | sqlite3.SQLITE_DETERMINISTIC,
