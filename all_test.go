@@ -2153,7 +2153,6 @@ func testInMemory(db *sql.DB) error {
 		return err
 	}
 
-	// the replacement
 	dirEntries, err := os.ReadDir("./")
 	if err != nil {
 		return err
