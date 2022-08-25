@@ -9,13 +9,14 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"modernc.org/tcl"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"modernc.org/tcl"
 )
 
 var (
@@ -26,6 +27,14 @@ var (
 )
 
 func TestTclTest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
+	if err := setMaxOpenFiles(1024); err != nil { // Avoid misc7.test hanging for a long time.
+		t.Fatal(err)
+	}
+
 	blacklist := map[string]struct{}{}
 	switch runtime.GOARCH {
 	case "386", "arm":
@@ -33,17 +42,17 @@ func TestTclTest(t *testing.T) {
 		// # memory.  Make sure the host has at least 8GB available before running
 		// # this test.
 		blacklist["bigsort.test"] = struct{}{}
+	case "s390x":
+		//TODO
+		blacklist["sysfault.test"] = struct{}{}
 	}
 	switch runtime.GOOS {
-	case "freebsd":
-		if err := setMaxOpenFiles(1024); err != nil { // Avoid misc7.test hanging for a long time.
-			t.Fatal(err)
-		}
 	case "windows":
 		// See https://gitlab.com/cznic/sqlite/-/issues/23#note_599920077 for details.
 		blacklist["symlink2.test"] = struct{}{}
 	}
-	m, err := filepath.Glob(filepath.FromSlash("testdata/tcl/*"))
+	tclTests := "testdata/tcl/*"
+	m, err := filepath.Glob(filepath.FromSlash(tclTests))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,6 +93,7 @@ func TestTclTest(t *testing.T) {
 
 	for _, v := range m {
 		if _, ok := blacklist[filepath.Base(v)]; ok {
+			trc("skipping %v", v)
 			continue
 		}
 

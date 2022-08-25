@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -19,6 +21,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -26,9 +29,12 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"unsafe"
 
 	"modernc.org/libc"
 	"modernc.org/mathutil"
+	sqlite3 "modernc.org/sqlite/lib"
+	"modernc.org/sqlite/vfs"
 )
 
 func caller(s string, va ...interface{}) {
@@ -145,6 +151,88 @@ func tempDB(t testing.TB) (string, *sql.DB) {
 	return dir, db
 }
 
+// https://gitlab.com/cznic/sqlite/issues/100
+func TestIssue100(t *testing.T) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`CREATE TABLE t1(v TEXT)`); err != nil {
+		t.Fatal(err)
+	}
+	var val []byte
+	if _, err := db.Exec(`INSERT INTO t1(v) VALUES(?)`, val); err != nil {
+		t.Fatal(err)
+	}
+	var res sql.NullByte
+	if err = db.QueryRow(`SELECT v FROM t1 LIMIT 1`).Scan(&res); err != nil {
+		t.Fatal(err)
+	}
+	if res.Valid {
+		t.Fatalf("got non-NULL result: %+v", res)
+	}
+
+	if _, err := db.Exec(`CREATE TABLE t2(
+		v TEXT check(v is NULL OR(json_valid(v) AND json_type(v)='array'))
+	)`); err != nil {
+		t.Fatal(err)
+	}
+	for _, val := range [...][]byte{nil, []byte(`["a"]`)} {
+		if _, err := db.Exec(`INSERT INTO t2(v) VALUES(?)`, val); err != nil {
+			t.Fatalf("inserting value %v (%[1]q): %v", val, err)
+		}
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/issues/98
+func TestIssue98(t *testing.T) {
+	dir, db := tempDB(t)
+
+	defer func() {
+		db.Close()
+		os.RemoveAll(dir)
+	}()
+
+	if _, err := db.Exec("create table t(b mediumblob not null)"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec("insert into t values (?)", []byte{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec("insert into t values (?)", nil); err == nil {
+		t.Fatal("expected statement to fail")
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/issues/97
+func TestIssue97(t *testing.T) {
+	name := filepath.Join(t.TempDir(), "tmp.db")
+
+	db, err := sql.Open(driverName, fmt.Sprintf("file:%s", name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec("create table t(b int)"); err != nil {
+		t.Fatal(err)
+	}
+
+	rodb, err := sql.Open(driverName, fmt.Sprintf("file:%s?mode=ro", name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rodb.Close()
+
+	_, err = rodb.Exec("drop table t")
+	if err == nil {
+		t.Fatal("expected drop table statement to fail on a read only database")
+	} else if err.Error() != "attempt to write a readonly database (8)" {
+		t.Fatal("expected drop table statement to fail because its a readonly database")
+	}
+}
+
 func TestScalar(t *testing.T) {
 	dir, db := tempDB(t)
 
@@ -211,6 +299,243 @@ func TestScalar(t *testing.T) {
 	if g, e := a[1], (rec{34, 2.78, false, "bar", t2.String()}); g != e {
 		t.Fatal(g, e)
 	}
+}
+
+func TestRedefineUserDefinedFunction(t *testing.T) {
+	dir, db := tempDB(t)
+	ctx := context.Background()
+
+	defer func() {
+		db.Close()
+		os.RemoveAll(dir)
+	}()
+
+	connection, err := db.Conn(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var r int
+	funName := "test"
+
+	if err = connection.Raw(func(driverConn interface{}) error {
+		c := driverConn.(*conn)
+
+		name, err := libc.CString(funName)
+		if err != nil {
+			return err
+		}
+
+		return c.createFunctionInternal(&userDefinedFunction{
+			zFuncName: name,
+			nArg:      0,
+			eTextRep:  sqlite3.SQLITE_UTF8 | sqlite3.SQLITE_DETERMINISTIC,
+			xFunc: func(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+				sqlite3.Xsqlite3_result_int(tls, ctx, 1)
+			},
+		})
+	}); err != nil {
+		t.Fatal(err)
+	}
+	row := connection.QueryRowContext(ctx, "select test()")
+
+	if err := row.Scan(&r); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := r, 1; g != e {
+		t.Fatal(g, e)
+	}
+
+	if err = connection.Raw(func(driverConn interface{}) error {
+		c := driverConn.(*conn)
+
+		name, err := libc.CString(funName)
+		if err != nil {
+			return err
+		}
+
+		return c.createFunctionInternal(&userDefinedFunction{
+			zFuncName: name,
+			nArg:      0,
+			eTextRep:  sqlite3.SQLITE_UTF8 | sqlite3.SQLITE_DETERMINISTIC,
+			xFunc: func(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+				sqlite3.Xsqlite3_result_int(tls, ctx, 2)
+			},
+		})
+	}); err != nil {
+		t.Fatal(err)
+	}
+	row = connection.QueryRowContext(ctx, "select test()")
+
+	if err := row.Scan(&r); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := r, 2; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestRegexpUserDefinedFunction(t *testing.T) {
+	dir, db := tempDB(t)
+	ctx := context.Background()
+
+	defer func() {
+		db.Close()
+		os.RemoveAll(dir)
+	}()
+
+	connection, err := db.Conn(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = connection.Raw(func(driverConn interface{}) error {
+		c := driverConn.(*conn)
+
+		name, err := libc.CString("regexp")
+		if err != nil {
+			return err
+		}
+
+		return c.createFunctionInternal(&userDefinedFunction{
+			zFuncName: name,
+			nArg:      2,
+			eTextRep:  sqlite3.SQLITE_UTF8 | sqlite3.SQLITE_DETERMINISTIC,
+			xFunc: func(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+				const sqliteValPtrSize = unsafe.Sizeof(&sqlite3.Sqlite3_value{})
+
+				argvv := make([]uintptr, argc)
+				for i := int32(0); i < argc; i++ {
+					argvv[i] = *(*uintptr)(unsafe.Pointer(argv + uintptr(i)*sqliteValPtrSize))
+				}
+
+				setErrorResult := func(res error) {
+					errmsg, cerr := libc.CString(res.Error())
+					if cerr != nil {
+						panic(cerr)
+					}
+					defer libc.Xfree(tls, errmsg)
+					sqlite3.Xsqlite3_result_error(tls, ctx, errmsg, -1)
+					sqlite3.Xsqlite3_result_error_code(tls, ctx, sqlite3.SQLITE_ERROR)
+				}
+
+				var s1 string
+				switch sqlite3.Xsqlite3_value_type(tls, argvv[0]) {
+				case sqlite3.SQLITE_TEXT:
+					s1 = libc.GoString(sqlite3.Xsqlite3_value_text(tls, argvv[0]))
+				default:
+					setErrorResult(errors.New("expected argv[0] to be text"))
+					return
+				}
+
+				var s2 string
+				switch sqlite3.Xsqlite3_value_type(tls, argvv[1]) {
+				case sqlite3.SQLITE_TEXT:
+					s2 = libc.GoString(sqlite3.Xsqlite3_value_text(tls, argvv[1]))
+				default:
+					setErrorResult(errors.New("expected argv[1] to be text"))
+					return
+				}
+
+				matched, err := regexp.MatchString(s1, s2)
+				if err != nil {
+					setErrorResult(fmt.Errorf("bad regular expression: %q", err))
+					return
+				}
+				sqlite3.Xsqlite3_result_int(tls, ctx, libc.Bool32(matched))
+			},
+		})
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("regexp filter", func(tt *testing.T) {
+		t1 := "seafood"
+		t2 := "fruit"
+
+		connection.ExecContext(ctx, `
+create table t(b text);
+insert into t values(?), (?);
+`, t1, t2)
+
+		rows, err := connection.QueryContext(ctx, "select * from t where b regexp 'foo.*'")
+		if err != nil {
+			tt.Fatal(err)
+		}
+
+		type rec struct {
+			b string
+		}
+		var a []rec
+		for rows.Next() {
+			var r rec
+			if err := rows.Scan(&r.b); err != nil {
+				tt.Fatal(err)
+			}
+
+			a = append(a, r)
+		}
+		if err := rows.Err(); err != nil {
+			tt.Fatal(err)
+		}
+
+		if g, e := len(a), 1; g != e {
+			tt.Fatal(g, e)
+		}
+
+		if g, e := a[0].b, t1; g != e {
+			tt.Fatal(g, e)
+		}
+	})
+
+	t.Run("regexp matches", func(tt *testing.T) {
+		row := connection.QueryRowContext(ctx, "select 'seafood' regexp 'foo.*'")
+
+		var r int
+		if err := row.Scan(&r); err != nil {
+			tt.Fatal(err)
+		}
+
+		if g, e := r, 1; g != e {
+			tt.Fatal(g, e)
+		}
+	})
+
+	t.Run("regexp does not match", func(tt *testing.T) {
+		row := connection.QueryRowContext(ctx, "select 'fruit' regexp 'foo.*'")
+
+		var r int
+		if err := row.Scan(&r); err != nil {
+			tt.Fatal(err)
+		}
+
+		if g, e := r, 0; g != e {
+			tt.Fatal(g, e)
+		}
+	})
+
+	t.Run("errors on bad regexp", func(tt *testing.T) {
+		_, err := connection.QueryContext(ctx, "select 'seafood' regexp 'a(b'")
+		if err == nil {
+			tt.Fatal(errors.New("expected error, got none"))
+		}
+	})
+
+	t.Run("errors on bad first argument", func(tt *testing.T) {
+		_, err := connection.QueryContext(ctx, "SELECT 1 REGEXP 'a(b'")
+		if err == nil {
+			tt.Fatal(errors.New("expected error, got none"))
+		}
+	})
+
+	t.Run("errors on bad second argument", func(tt *testing.T) {
+		_, err := connection.QueryContext(ctx, "SELECT 'seafood' REGEXP 1")
+		if err == nil {
+			tt.Fatal(errors.New("expected error, got none"))
+		}
+	})
 }
 
 func TestBlob(t *testing.T) {
@@ -556,6 +881,15 @@ func TestConcurrentGoroutines(t *testing.T) {
 }
 
 func TestConcurrentProcesses(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
+	//TODO The current riscv64 board seems too slow for the hardcoded timeouts.
+	if runtime.GOARCH == "riscv64" {
+		t.Skip("skipping test")
+	}
+
 	dir, err := ioutil.TempDir("", "sqlite-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -625,8 +959,8 @@ outer:
 			continue
 		}
 
-		fmt.Printf("exec: %s db --trace 2 %s\n", filepath.FromSlash(bin), script)
-		out, err := exec.Command(filepath.FromSlash(bin), "db", "--trace", "2", script).CombinedOutput()
+		fmt.Printf("exec: %s db %s\n", filepath.FromSlash(bin), script)
+		out, err := exec.Command(filepath.FromSlash(bin), "db", "--timeout", "60000", script).CombinedOutput()
 		if err != nil {
 			t.Fatalf("%s\n%v", out, err)
 		}
@@ -799,7 +1133,7 @@ func TestIssue20(t *testing.T) {
 		os.RemoveAll(tempDir)
 	}()
 
-	db, err := sql.Open("sqlite", filepath.Join(tempDir, "foo.db"))
+	db, err := sql.Open("sqlite", filepath.Join(tempDir, "foo.db")+"?_pragma=busy_timeout%3d10000")
 	if err != nil {
 		t.Fatalf("foo.db open fail: %v", err)
 	}
@@ -1166,6 +1500,7 @@ func TestTimeScan(t *testing.T) {
 		{s: "2021-01-02 16:39:17+00:00", w: ref.Truncate(time.Second)},
 		{s: "2021-01-02T16:39:17.123456+00:00", w: ref.Truncate(time.Microsecond)},
 		{s: "2021-01-02 16:39:17.123456+00:00", w: ref.Truncate(time.Microsecond)},
+		{s: "2021-01-02 16:39:17.123456Z", w: ref.Truncate(time.Microsecond)},
 		{s: "2021-01-02 12:39:17-04:00", w: ref.Truncate(time.Second)},
 		{s: "2021-01-02 16:39:17", w: ref.Truncate(time.Second)},
 		{s: "2021-01-02T16:39:17", w: ref.Truncate(time.Second)},
@@ -1190,7 +1525,6 @@ func TestTimeScan(t *testing.T) {
 			}
 
 			var got time.Time
-
 			if err := db.QueryRow("select y from x").Scan(&got); err != nil {
 				t.Fatal(err)
 			}
@@ -1211,6 +1545,69 @@ func TestTimeLocaltime(t *testing.T) {
 
 	if _, err := db.Exec("select datetime('now', 'localtime')"); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestTimeFormat(t *testing.T) {
+	ref := time.Date(2021, 1, 2, 16, 39, 17, 123456789, time.UTC)
+
+	cases := []struct {
+		f string
+		w string
+	}{
+		{f: "", w: "2021-01-02 16:39:17.123456789 +0000 UTC"},
+		{f: "sqlite", w: "2021-01-02 16:39:17.123456789+00:00"},
+	}
+	for _, c := range cases {
+		t.Run("", func(t *testing.T) {
+			dsn := "file::memory:"
+			if c.f != "" {
+				q := make(url.Values)
+				q.Set("_time_format", c.f)
+				dsn += "?" + q.Encode()
+			}
+			db, err := sql.Open(driverName, dsn)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+
+			if _, err := db.Exec("drop table if exists x; create table x (y text)"); err != nil {
+				t.Fatal(err)
+			}
+
+			if _, err := db.Exec(`insert into x values (?)`, ref); err != nil {
+				t.Fatal(err)
+			}
+
+			var got string
+			if err := db.QueryRow(`select y from x`).Scan(&got); err != nil {
+				t.Fatal(err)
+			}
+
+			if got != c.w {
+				t.Fatal(got, c.w)
+			}
+		})
+	}
+}
+
+func TestTimeFormatBad(t *testing.T) {
+	db, err := sql.Open(driverName, "file::memory:?_time_format=bogus")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	// Error doesn't appear until a connection is opened.
+	_, err = db.Exec("select 1")
+	if err == nil {
+		t.Fatal("wanted error")
+	}
+
+	want := `unknown _time_format "bogus"`
+	if got := err.Error(); got != want {
+		t.Fatalf("got error %q, want %q", got, want)
 	}
 }
 
@@ -1402,6 +1799,10 @@ func testBindingError(t *testing.T, query func(db *sql.DB, query string, args ..
 
 // https://gitlab.com/cznic/sqlite/-/issues/51
 func TestIssue51(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
 	tempDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		t.Fatal(err)
@@ -1791,4 +2192,515 @@ func emptyDir(s string) error {
 		}
 	}
 	return nil
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/70
+func TestIssue70(t *testing.T) {
+	db, err := sql.Open(driverName, "file::memory:")
+	if _, err = db.Exec(`create table t (foo)`); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("conn close: %v", err)
+		}
+	}()
+
+	r, err := db.Query("select * from t")
+	if err != nil {
+		t.Errorf("select a: %v", err)
+		return
+	}
+
+	if err := r.Close(); err != nil {
+		t.Errorf("rows close: %v", err)
+		return
+	}
+
+	if _, err := db.Query("select * from t"); err != nil {
+		t.Errorf("select b: %v", err)
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/66
+func TestIssue66(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		os.RemoveAll(tempDir)
+	}()
+
+	fn := filepath.Join(tempDir, "testissue66.db")
+	db, err := sql.Open(driverName, fn)
+
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("conn close: %v", err)
+		}
+	}()
+
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS verdictcache (sha1 text);`); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	// ab
+	// 00	ok
+	// 01	ok
+	// 10	ok
+	// 11	hangs with old implementation of conn.step().
+
+	// a
+	if _, err = db.Exec("INSERT OR REPLACE INTO verdictcache (sha1) VALUES ($1)", "a"); err != nil {
+		t.Fatalf("insert: %v", err)
+	}
+
+	// b
+	if _, err := db.Query("SELECT * FROM verdictcache WHERE sha1=$1", "a"); err != nil {
+		t.Fatalf("select: %v", err)
+	}
+
+	// c
+	if _, err = db.Exec("INSERT OR REPLACE INTO verdictcache (sha1) VALUES ($1)", "b"); err != nil {
+
+		// https://www.sqlite.org/rescode.html#busy
+		// ----------------------------------------------------------------------------
+		// The SQLITE_BUSY result code indicates that the database file could not be
+		// written (or in some cases read) because of concurrent activity by some other
+		// database connection, usually a database connection in a separate process.
+		// ----------------------------------------------------------------------------
+		//
+		// The SQLITE_BUSY error is _expected_.
+		//
+		// According to the above, performing c after b's result was not yet
+		// consumed/closed is not possible. Mattn's driver seems to resort to
+		// autoclosing the driver.Rows returned by b in this situation, but I don't
+		// think that's correct (jnml).
+
+		t.Logf("insert 2: %v", err)
+		if !strings.Contains(err.Error(), "database is locked (5) (SQLITE_BUSY)") {
+			t.Fatalf("insert 2: %v", err)
+		}
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/65
+func TestIssue65(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		os.RemoveAll(tempDir)
+	}()
+
+	db, err := sql.Open("sqlite", filepath.Join(tempDir, "testissue65.sqlite"))
+	if err != nil {
+		t.Fatalf("Failed to open database: %v", err)
+	}
+
+	testIssue65(t, db, true)
+
+	if db, err = sql.Open("sqlite", filepath.Join(tempDir, "testissue65b.sqlite")+"?_pragma=busy_timeout%3d10000"); err != nil {
+		t.Fatalf("Failed to open database: %v", err)
+	}
+
+	testIssue65(t, db, false)
+}
+
+func testIssue65(t *testing.T, db *sql.DB, canFail bool) {
+	defer db.Close()
+
+	ctx := context.Background()
+
+	if _, err := db.Exec("CREATE TABLE foo (department INTEGER, profits INTEGER)"); err != nil {
+		t.Fatal("Failed to create table:", err)
+	}
+
+	if _, err := db.Exec("INSERT INTO foo VALUES (1, 10), (1, 20), (1, 45), (2, 42), (2, 115)"); err != nil {
+		t.Fatal("Failed to insert records:", err)
+	}
+
+	readFunc := func(ctx context.Context) error {
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("read error: %v", err)
+		}
+
+		defer tx.Rollback()
+
+		var dept, count int64
+		if err := tx.QueryRowContext(ctx, "SELECT department, COUNT(*) FROM foo GROUP BY department").Scan(
+			&dept,
+			&count,
+		); err != nil {
+			return fmt.Errorf("read error: %v", err)
+		}
+
+		return nil
+	}
+
+	writeFunc := func(ctx context.Context) error {
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("write error: %v", err)
+		}
+
+		defer tx.Rollback()
+
+		if _, err := tx.ExecContext(
+			ctx,
+			"INSERT INTO foo(department, profits) VALUES (@department, @profits)",
+			sql.Named("department", rand.Int()),
+			sql.Named("profits", rand.Int()),
+		); err != nil {
+			return fmt.Errorf("write error: %v", err)
+		}
+
+		return tx.Commit()
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	const cycles = 100
+
+	errCh := make(chan error, 2)
+
+	go func() {
+		defer wg.Done()
+
+		for i := 0; i < cycles; i++ {
+			if err := readFunc(ctx); err != nil {
+				err = fmt.Errorf("readFunc(%v): %v", canFail, err)
+				t.Log(err)
+				if !canFail {
+					errCh <- err
+				}
+				return
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		for i := 0; i < cycles; i++ {
+			if err := writeFunc(ctx); err != nil {
+				err = fmt.Errorf("writeFunc(%v): %v", canFail, err)
+				t.Log(err)
+				if !canFail {
+					errCh <- err
+				}
+				return
+			}
+		}
+	}()
+
+	wg.Wait()
+	for {
+		select {
+		case err := <-errCh:
+			t.Error(err)
+		default:
+			return
+		}
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/73
+func TestConstraintPrimaryKeyError(t *testing.T) {
+	db, err := sql.Open(driverName, "file::memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS hash (hashval TEXT PRIMARY KEY NOT NULL)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("INSERT INTO hash (hashval) VALUES (?)", "somehashval")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("INSERT INTO hash (hashval) VALUES (?)", "somehashval")
+	if err == nil {
+		t.Fatal("wanted error")
+	}
+
+	if errs, want := err.Error(), "constraint failed: UNIQUE constraint failed: hash.hashval (1555)"; errs != want {
+		t.Fatalf("got error string %q, want %q", errs, want)
+	}
+}
+
+func TestConstraintUniqueError(t *testing.T) {
+	db, err := sql.Open(driverName, "file::memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS hash (hashval TEXT UNIQUE)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("INSERT INTO hash (hashval) VALUES (?)", "somehashval")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("INSERT INTO hash (hashval) VALUES (?)", "somehashval")
+	if err == nil {
+		t.Fatal("wanted error")
+	}
+
+	if errs, want := err.Error(), "constraint failed: UNIQUE constraint failed: hash.hashval (2067)"; errs != want {
+		t.Fatalf("got error string %q, want %q", errs, want)
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/92
+func TestBeginMode(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		os.RemoveAll(tempDir)
+	}()
+
+	tests := []struct {
+		mode string
+		want int32
+	}{
+		{"deferred", sqlite3.SQLITE_TXN_NONE},
+		{"immediate", sqlite3.SQLITE_TXN_WRITE},
+		// TODO: how to verify "exclusive" is working differently from immediate,
+		// short of concurrently trying to open the database again? This is only
+		// different in non-WAL journal modes.
+		{"exclusive", sqlite3.SQLITE_TXN_WRITE},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		for _, jm := range []string{"delete", "wal"} {
+			jm := jm
+			t.Run(jm+"/"+tt.mode, func(t *testing.T) {
+				// t.Parallel()
+
+				qs := fmt.Sprintf("?_txlock=%s&_pragma=journal_mode(%s)", tt.mode, jm)
+				db, err := sql.Open("sqlite", filepath.Join(tempDir, fmt.Sprintf("testbeginmode-%s.sqlite", tt.mode))+qs)
+				if err != nil {
+					t.Fatalf("Failed to open database: %v", err)
+				}
+				defer db.Close()
+				connection, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatalf("Failed to open connection: %v", err)
+				}
+
+				tx, err := connection.BeginTx(context.Background(), nil)
+				if err != nil {
+					t.Fatalf("Failed to begin transaction: %v", err)
+				}
+				defer tx.Rollback()
+				if err := connection.Raw(func(driverConn interface{}) error {
+					p, err := libc.CString("main")
+					if err != nil {
+						return err
+					}
+					c := driverConn.(*conn)
+					defer c.free(p)
+					got := sqlite3.Xsqlite3_txn_state(c.tls, c.db, p)
+					if got != tt.want {
+						return fmt.Errorf("in mode %s, got txn state %d, want %d", tt.mode, got, tt.want)
+					}
+					return nil
+				}); err != nil {
+					t.Fatalf("Failed to check txn state: %v", err)
+				}
+			})
+		}
+	}
+}
+
+// https://gitlab.com/cznic/sqlite/-/issues/94
+func TestCancelRace(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		os.RemoveAll(tempDir)
+	}()
+
+	db, err := sql.Open("sqlite", filepath.Join(tempDir, "testcancelrace.sqlite"))
+	if err != nil {
+		t.Fatalf("Failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	tests := []struct {
+		name string
+		f    func(context.Context, *sql.DB) error
+	}{
+		{
+			"db.ExecContext",
+			func(ctx context.Context, d *sql.DB) error {
+				_, err := db.ExecContext(ctx, "select 1")
+				return err
+			},
+		},
+		{
+			"db.QueryContext",
+			func(ctx context.Context, d *sql.DB) error {
+				_, err := db.QueryContext(ctx, "select 1")
+				return err
+			},
+		},
+		{
+			"tx.ExecContext",
+			func(ctx context.Context, d *sql.DB) error {
+				tx, err := db.BeginTx(ctx, &sql.TxOptions{})
+				if err != nil {
+					return err
+				}
+				defer tx.Rollback()
+				if _, err := tx.ExecContext(ctx, "select 1"); err != nil {
+					return err
+				}
+				return tx.Rollback()
+			},
+		},
+		{
+			"tx.QueryContext",
+			func(ctx context.Context, d *sql.DB) error {
+				tx, err := db.BeginTx(ctx, &sql.TxOptions{})
+				if err != nil {
+					return err
+				}
+				defer tx.Rollback()
+				if _, err := tx.QueryContext(ctx, "select 1"); err != nil {
+					return err
+				}
+				return tx.Rollback()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// this is a race condition, so it's not guaranteed to fail on any given run,
+			// but with a moderate number of iterations it will eventually catch it
+			iterations := 100
+			for i := 0; i < iterations; i++ {
+				// none of these iterations should ever fail, because we never cancel their
+				// context until after they complete
+				ctx, cancel := context.WithCancel(context.Background())
+				if err := tt.f(ctx, db); err != nil {
+					t.Fatalf("Failed to run test query on iteration %d: %v", i, err)
+				}
+				cancel()
+			}
+		})
+	}
+}
+
+//go:embed embed.db
+var fs embed.FS
+
+//go:embed embed2.db
+var fs2 embed.FS
+
+func TestVFS(t *testing.T) {
+	fn, f, err := vfs.New(fs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		if err := f.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	f2n, f2, err := vfs.New(fs2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		if err := f2.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	db, err := sql.Open("sqlite", "file:embed.db?vfs="+fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	db2, err := sql.Open("sqlite", "file:embed2.db?vfs="+f2n)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db2.Close()
+
+	rows, err := db.Query("select * from t order by i;")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var a []int
+	for rows.Next() {
+		var i, j, k int
+		if err := rows.Scan(&i, &j, &k); err != nil {
+			t.Fatal(err)
+		}
+
+		a = append(a, i, j, k)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(a)
+	if g, e := fmt.Sprint(a), "[1 2 3 40 50 60]"; g != e {
+		t.Fatalf("got %q, expected %q", g, e)
+	}
+
+	if rows, err = db2.Query("select * from u order by s;"); err != nil {
+		t.Fatal(err)
+	}
+
+	var b []string
+	for rows.Next() {
+		var x, y string
+		if err := rows.Scan(&x, &y); err != nil {
+			t.Fatal(err)
+		}
+
+		b = append(b, x, y)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(b)
+	if g, e := fmt.Sprint(b), "[123 xyz abc def]"; g != e {
+		t.Fatalf("got %q, expected %q", g, e)
+	}
 }
