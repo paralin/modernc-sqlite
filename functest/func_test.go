@@ -13,6 +13,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
+	"path"
 	"regexp"
 	"strings"
 	"testing"
@@ -665,6 +667,89 @@ func TestRegisteredFunctions(t *testing.T) {
 				tt.Fatal(err)
 			}
 			if count != 2 {
+				tt.Fatal(count, 2)
+			}
+		})
+	})
+
+	t.Run("backup and restore", func(tt *testing.T) {
+		type backuper interface {
+			NewBackup(string) (*sqlite3.Backup, error)
+			NewRestore(string) (*sqlite3.Backup, error)
+		}
+
+		tmpDir, err := os.MkdirTemp(os.TempDir(), "storetest_")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(tmpDir)
+		tmpFile := path.Join(tmpDir, "test.db")
+
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			// Backup the DB to tmpFile
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					bck, err := driverConn.(backuper).NewBackup(tmpFile)
+					if err != nil {
+						return err
+					}
+					for more := true; more; {
+						more, err = bck.Step(-1)
+						if err != nil {
+							return err
+						}
+					}
+
+					return bck.Finish()
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+		})
+
+		// Restore will be executed on a new in-memory DB
+		withDB(func(db *sql.DB) {
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					bck, err := driverConn.(backuper).NewRestore(tmpFile)
+					if err != nil {
+						return err
+					}
+					for more := true; more; {
+						more, err = bck.Step(-1)
+						if err != nil {
+							return err
+						}
+					}
+
+					return bck.Finish()
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+
+			// Check the table is complete
+			var count int
+			row := db.QueryRow("select count(*) from t")
+			if err := row.Scan(&count); err != nil {
+				tt.Fatal(err)
+			} else if count != 2 {
 				tt.Fatal(count, 2)
 			}
 		})
