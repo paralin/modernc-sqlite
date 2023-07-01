@@ -100,7 +100,6 @@ do_eqp_test 4.2 {
   |--MATERIALIZE rr
   |  `--SCAN ft4 VIRTUAL TABLE INDEX 3:
   |--SCAN t4
-  |--BLOOM FILTER ON rr (docid=?)
   `--SEARCH rr USING AUTOMATIC COVERING INDEX (docid=?) LEFT-JOIN
 }
 
