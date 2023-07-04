@@ -6,12 +6,15 @@ package functest // modernc.org/sqlite/functest
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
+	"path"
 	"regexp"
 	"strings"
 	"testing"
@@ -594,6 +597,160 @@ func TestRegisteredFunctions(t *testing.T) {
 			}
 			if !strings.Contains(err.Error(), "MakeAggregate function returned nil") {
 				tt.Fatal(err)
+			}
+		})
+	})
+
+	t.Run("serialize and deserialize", func(tt *testing.T) {
+		type serializer interface {
+			Serialize() ([]byte, error)
+			Deserialize([]byte) error
+		}
+
+		var buf []byte
+
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			// Serialize the DB into buf
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					var err error
+					buf, err = driverConn.(serializer).Serialize()
+					return err
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+		})
+
+		// Deserialize will be executed on a new in-memory DB
+		withDB(func(db *sql.DB) {
+			// Deserialize buf into the DB
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					return driverConn.(serializer).Deserialize(buf)
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+
+			// Note sqlite3_deserialize will disconnect all connections from
+			// the database, so force to recreate a connection here. It means
+			// all connections attached to the db object are now invalid. Do
+			// not close it because it will be closed by withDB. It's a bit
+			// weird to handle.
+			conn, err := db.Conn(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Check the table is complete
+			row := conn.QueryRowContext(context.Background(), "select count(*) from t")
+
+			var count int
+			if err := row.Scan(&count); err != nil {
+				tt.Fatal(err)
+			}
+			if count != 2 {
+				tt.Fatal(count, 2)
+			}
+		})
+	})
+
+	t.Run("backup and restore", func(tt *testing.T) {
+		type backuper interface {
+			NewBackup(string) (*sqlite3.Backup, error)
+			NewRestore(string) (*sqlite3.Backup, error)
+		}
+
+		tmpDir, err := os.MkdirTemp(os.TempDir(), "storetest_")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(tmpDir)
+		tmpFile := path.Join(tmpDir, "test.db")
+
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			// Backup the DB to tmpFile
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					bck, err := driverConn.(backuper).NewBackup(tmpFile)
+					if err != nil {
+						return err
+					}
+					for more := true; more; {
+						more, err = bck.Step(-1)
+						if err != nil {
+							return err
+						}
+					}
+
+					return bck.Finish()
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+		})
+
+		// Restore will be executed on a new in-memory DB
+		withDB(func(db *sql.DB) {
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					bck, err := driverConn.(backuper).NewRestore(tmpFile)
+					if err != nil {
+						return err
+					}
+					for more := true; more; {
+						more, err = bck.Step(-1)
+						if err != nil {
+							return err
+						}
+					}
+
+					return bck.Finish()
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+
+			// Check the table is complete
+			var count int
+			row := db.QueryRow("select count(*) from t")
+			if err := row.Scan(&count); err != nil {
+				tt.Fatal(err)
+			} else if count != 2 {
+				tt.Fatal(count, 2)
 			}
 		})
 	})

@@ -1559,6 +1559,146 @@ func (c *conn) query(ctx context.Context, query string, args []driver.NamedValue
 	return s.(*stmt).query(ctx, args)
 }
 
+// Serialize returns a serialization of the main database. For an ordinary on-disk
+// database file, the serialization is just a copy of the disk file. For an in-memory
+// database or a "TEMP" database, the serialization is the same sequence of bytes
+// which would be written to disk if that database where backed up to disk.
+func (c *conn) Serialize() (v []byte, err error) {
+	pLen := c.tls.Alloc(8)
+	defer c.tls.Free(8)
+
+	zSchema := sqlite3.Xsqlite3_db_name(c.tls, c.db, 0)
+	if zSchema == 0 {
+		return nil, fmt.Errorf("failed to get main db name")
+	}
+
+	pBuf := sqlite3.Xsqlite3_serialize(c.tls, c.db, zSchema, pLen, 0)
+	bufLen := *(*sqlite3.Sqlite3_int64)(unsafe.Pointer(pLen))
+	if pBuf != 0 {
+		defer sqlite3.Xsqlite3_free(c.tls, pBuf)
+	}
+	if bufLen <= 0 {
+		return nil, fmt.Errorf("invalid length returned: %d", bufLen)
+	} else if pBuf == 0 || bufLen == 0 {
+		return nil, nil
+	}
+
+	v = make([]byte, bufLen)
+	copy(v, (*libc.RawMem)(unsafe.Pointer(pBuf))[:bufLen:bufLen])
+	return v, nil
+}
+
+// Deserialize restore a database from the content returned by Serialize.
+func (c *conn) Deserialize(buf []byte) (err error) {
+	bufLen := len(buf)
+	pBuf := c.tls.Alloc(bufLen) // free will be done if it fails or on close, must not be freed here
+
+	copy((*libc.RawMem)(unsafe.Pointer(pBuf))[:bufLen:bufLen], buf)
+
+	zSchema := sqlite3.Xsqlite3_db_name(c.tls, c.db, 0)
+	if zSchema == 0 {
+		return fmt.Errorf("failed to get main db name")
+	}
+
+	rc := sqlite3.Xsqlite3_deserialize(c.tls, c.db, zSchema, pBuf, int64(bufLen), int64(bufLen), sqlite3.SQLITE_DESERIALIZE_RESIZEABLE|sqlite3.SQLITE_DESERIALIZE_FREEONCLOSE)
+	if rc != sqlite3.SQLITE_OK {
+		return c.errstr(rc)
+	}
+	return nil
+}
+
+// Backup object is used to manage progress and cleanup an online backup. It
+// is returned by NewBackup or NewRestore.
+type Backup struct {
+	srcConn *conn   // source database connection
+	dstConn *conn   // destination database connection
+	pBackup uintptr // sqlite3_backup object pointer
+}
+
+// NewBackup returns a Backup object that will create an online backup of
+// current database to the databased pointed by the passed URI.
+func (c *conn) NewBackup(dstUri string) (*Backup, error) {
+	dstConn, err := newConn(dstUri)
+	if err != nil {
+		return nil, err
+	}
+	backup, err := c.backup(dstConn, false)
+	if err != nil {
+		dstConn.Close()
+	}
+	return backup, err
+}
+
+// NewRestore returns a Backup object that will restore a backup to current
+// database from the databased pointed by the passed URI.
+func (c *conn) NewRestore(srcUri string) (*Backup, error) {
+	srcConn, err := newConn(srcUri)
+	if err != nil {
+		return nil, err
+	}
+	backup, err := c.backup(srcConn, true)
+	if err != nil {
+		srcConn.Close()
+	}
+	return backup, err
+}
+
+func (c *conn) backup(remoteConn *conn, restore bool) (_ *Backup, finalErr error) {
+	srcSchema := sqlite3.Xsqlite3_db_name(c.tls, c.db, 0)
+	if srcSchema == 0 {
+		return nil, fmt.Errorf("failed to get main source db name")
+	}
+
+	dstSchema := sqlite3.Xsqlite3_db_name(remoteConn.tls, remoteConn.db, 0)
+	if dstSchema == 0 {
+		return nil, fmt.Errorf("failed to get main destination db name")
+	}
+
+	var pBackup uintptr
+	if restore {
+		pBackup = sqlite3.Xsqlite3_backup_init(c.tls, c.db, srcSchema, remoteConn.db, dstSchema)
+	} else {
+		pBackup = sqlite3.Xsqlite3_backup_init(c.tls, remoteConn.db, dstSchema, c.db, srcSchema)
+	}
+	if pBackup <= 0 {
+		rc := sqlite3.Xsqlite3_errcode(c.tls, remoteConn.db)
+		return nil, c.errstr(rc)
+	}
+
+	return &Backup{srcConn: c, dstConn: remoteConn, pBackup: pBackup}, nil
+}
+
+// Step will copy up to n pages between the source and destination databases
+// specified by the backup object. If n is negative, all remaining source
+// pages are copied.
+// If it successfully copies n pages and there are still more pages to be
+// copied, then the function returns true with no error. If it successfully
+// finishes copying all pages from source to destination, then it returns
+// false with no error. If an error occurs while running, then an error is
+// returned.
+func (b *Backup) Step(n int32) (bool, error) {
+	rc := sqlite3.Xsqlite3_backup_step(b.srcConn.tls, b.pBackup, n)
+	if rc == sqlite3.SQLITE_OK {
+		return true, nil
+	} else if rc == sqlite3.SQLITE_DONE {
+		return false, nil
+	} else {
+		return false, b.srcConn.errstr(rc)
+	}
+}
+
+// Finish releases all resources associated with the Backup object. The Backup
+// object is invalid and may not be used following a call to Finish.
+func (b *Backup) Finish() error {
+	rc := sqlite3.Xsqlite3_backup_finish(b.srcConn.tls, b.pBackup)
+	b.dstConn.Close()
+	if rc == sqlite3.SQLITE_OK {
+		return nil
+	} else {
+		return b.srcConn.errstr(rc)
+	}
+}
+
 // Driver implements database/sql/driver.Driver.
 type Driver struct {
 	// user defined functions that are added to every new connection on Open
