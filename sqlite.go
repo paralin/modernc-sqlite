@@ -581,6 +581,13 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 	}
 
 	var allocs []uintptr
+
+	defer func() {
+		if r == nil && err == nil {
+			r, err = newRows(s.c, pstmt, allocs, true)
+		}
+	}()
+
 	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0 && atomic.LoadInt32(&done) == 0; {
 		if pstmt, err = s.c.prepareV2(&psql); err != nil {
 			return nil, err
