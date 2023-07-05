@@ -2987,3 +2987,51 @@ func TestLimit(t *testing.T) {
 		t.Fatalf("got %d, expected %d", g, e)
 	}
 }
+
+// https://gitlab.com/cznic/sqlite/issues/152
+func TestIssue152(t *testing.T) {
+	for _, v := range []string{
+		"SELECT 1 WHERE false",
+		"-- just a comment",
+		"",
+	} {
+		t.Run(v, func(t *testing.T) { testIssue152(t, v) })
+	}
+}
+
+func testIssue152(t *testing.T, query string) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	rows, err := db.Query(query)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(columns) == 0 {
+		return
+	}
+
+	for rows.Next() {
+		err := rows.Scan()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err = rows.Err()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
