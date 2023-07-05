@@ -474,7 +474,6 @@ func (s *stmt) Close() (err error) {
 
 // Exec executes a query that doesn't return rows, such as an INSERT or UPDATE.
 //
-//
 // Deprecated: Drivers should implement StmtExecContext instead (or
 // additionally).
 func (s *stmt) Exec(args []driver.Value) (driver.Result, error) { //TODO StmtExecContext
@@ -850,7 +849,9 @@ func applyQueryParams(c *conn, query string) error {
 	return nil
 }
 
-// const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
 func (c *conn) columnBlob(pstmt uintptr, iCol int) (v []byte, err error) {
 	p := sqlite3.Xsqlite3_column_blob(c.tls, pstmt, int32(iCol))
 	len, err := c.columnBytes(pstmt, iCol)
@@ -867,13 +868,17 @@ func (c *conn) columnBlob(pstmt uintptr, iCol int) (v []byte, err error) {
 	return v, nil
 }
 
-// int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
 func (c *conn) columnBytes(pstmt uintptr, iCol int) (_ int, err error) {
 	v := sqlite3.Xsqlite3_column_bytes(c.tls, pstmt, int32(iCol))
 	return int(v), nil
 }
 
-// const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol);
 func (c *conn) columnText(pstmt uintptr, iCol int) (v string, err error) {
 	p := sqlite3.Xsqlite3_column_text(c.tls, pstmt, int32(iCol))
 	len, err := c.columnBytes(pstmt, iCol)
@@ -890,53 +895,71 @@ func (c *conn) columnText(pstmt uintptr, iCol int) (v string, err error) {
 	return string(b), nil
 }
 
-// double sqlite3_column_double(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	double sqlite3_column_double(sqlite3_stmt*, int iCol);
 func (c *conn) columnDouble(pstmt uintptr, iCol int) (v float64, err error) {
 	v = sqlite3.Xsqlite3_column_double(c.tls, pstmt, int32(iCol))
 	return v, nil
 }
 
-// sqlite3_int64 sqlite3_column_int64(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	sqlite3_int64 sqlite3_column_int64(sqlite3_stmt*, int iCol);
 func (c *conn) columnInt64(pstmt uintptr, iCol int) (v int64, err error) {
 	v = sqlite3.Xsqlite3_column_int64(c.tls, pstmt, int32(iCol))
 	return v, nil
 }
 
-// int sqlite3_column_type(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	int sqlite3_column_type(sqlite3_stmt*, int iCol);
 func (c *conn) columnType(pstmt uintptr, iCol int) (_ int, err error) {
 	v := sqlite3.Xsqlite3_column_type(c.tls, pstmt, int32(iCol))
 	return int(v), nil
 }
 
-// const char *sqlite3_column_decltype(sqlite3_stmt*,int);
+// C documentation
+//
+//	const char *sqlite3_column_decltype(sqlite3_stmt*,int);
 func (c *conn) columnDeclType(pstmt uintptr, iCol int) string {
 	return libc.GoString(sqlite3.Xsqlite3_column_decltype(c.tls, pstmt, int32(iCol)))
 }
 
-// const char *sqlite3_column_name(sqlite3_stmt*, int N);
+// C documentation
+//
+//	const char *sqlite3_column_name(sqlite3_stmt*, int N);
 func (c *conn) columnName(pstmt uintptr, n int) (string, error) {
 	p := sqlite3.Xsqlite3_column_name(c.tls, pstmt, int32(n))
 	return libc.GoString(p), nil
 }
 
-// int sqlite3_column_count(sqlite3_stmt *pStmt);
+// C documentation
+//
+//	int sqlite3_column_count(sqlite3_stmt *pStmt);
 func (c *conn) columnCount(pstmt uintptr) (_ int, err error) {
 	v := sqlite3.Xsqlite3_column_count(c.tls, pstmt)
 	return int(v), nil
 }
 
-// sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
+// C documentation
+//
+//	sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 func (c *conn) lastInsertRowID() (v int64, _ error) {
 	return sqlite3.Xsqlite3_last_insert_rowid(c.tls, c.db), nil
 }
 
-// int sqlite3_changes(sqlite3*);
+// C documentation
+//
+//	int sqlite3_changes(sqlite3*);
 func (c *conn) changes() (int, error) {
 	v := sqlite3.Xsqlite3_changes(c.tls, c.db)
 	return int(v), nil
 }
 
-// int sqlite3_step(sqlite3_stmt*);
+// C documentation
+//
+//	int sqlite3_step(sqlite3_stmt*);
 func (c *conn) step(pstmt uintptr) (int, error) {
 	for {
 		switch rc := sqlite3.Xsqlite3_step(c.tls, pstmt); rc {
@@ -1090,7 +1113,9 @@ func (c *conn) bind(pstmt uintptr, n int, args []driver.NamedValue) (allocs []ui
 	return allocs, nil
 }
 
-// int sqlite3_bind_null(sqlite3_stmt*, int);
+// C documentation
+//
+//	int sqlite3_bind_null(sqlite3_stmt*, int);
 func (c *conn) bindNull(pstmt uintptr, idx1 int) (uintptr, error) {
 	if rc := sqlite3.Xsqlite3_bind_null(c.tls, pstmt, int32(idx1)); rc != sqlite3.SQLITE_OK {
 		return 0, c.errstr(rc)
@@ -1099,7 +1124,9 @@ func (c *conn) bindNull(pstmt uintptr, idx1 int) (uintptr, error) {
 	return 0, nil
 }
 
-// int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
+// C documentation
+//
+//	int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
 func (c *conn) bindText(pstmt uintptr, idx1 int, value string) (uintptr, error) {
 	p, err := libc.CString(value)
 	if err != nil {
@@ -1114,7 +1141,9 @@ func (c *conn) bindText(pstmt uintptr, idx1 int, value string) (uintptr, error) 
 	return p, nil
 }
 
-// int sqlite3_bind_blob(sqlite3_stmt*, int, const void*, int n, void(*)(void*));
+// C documentation
+//
+//	int sqlite3_bind_blob(sqlite3_stmt*, int, const void*, int n, void(*)(void*));
 func (c *conn) bindBlob(pstmt uintptr, idx1 int, value []byte) (uintptr, error) {
 	if value != nil && len(value) == 0 {
 		if rc := sqlite3.Xsqlite3_bind_zeroblob(c.tls, pstmt, int32(idx1), 0); rc != sqlite3.SQLITE_OK {
@@ -1138,7 +1167,9 @@ func (c *conn) bindBlob(pstmt uintptr, idx1 int, value []byte) (uintptr, error) 
 	return p, nil
 }
 
-// int sqlite3_bind_int(sqlite3_stmt*, int, int);
+// C documentation
+//
+//	int sqlite3_bind_int(sqlite3_stmt*, int, int);
 func (c *conn) bindInt(pstmt uintptr, idx1, value int) (err error) {
 	if rc := sqlite3.Xsqlite3_bind_int(c.tls, pstmt, int32(idx1), int32(value)); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1147,7 +1178,9 @@ func (c *conn) bindInt(pstmt uintptr, idx1, value int) (err error) {
 	return nil
 }
 
-// int sqlite3_bind_double(sqlite3_stmt*, int, double);
+// C documentation
+//
+//	int sqlite3_bind_double(sqlite3_stmt*, int, double);
 func (c *conn) bindDouble(pstmt uintptr, idx1 int, value float64) (err error) {
 	if rc := sqlite3.Xsqlite3_bind_double(c.tls, pstmt, int32(idx1), value); rc != 0 {
 		return c.errstr(rc)
@@ -1156,7 +1189,9 @@ func (c *conn) bindDouble(pstmt uintptr, idx1 int, value float64) (err error) {
 	return nil
 }
 
-// int sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64);
+// C documentation
+//
+//	int sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64);
 func (c *conn) bindInt64(pstmt uintptr, idx1 int, value int64) (err error) {
 	if rc := sqlite3.Xsqlite3_bind_int64(c.tls, pstmt, int32(idx1), value); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1165,19 +1200,25 @@ func (c *conn) bindInt64(pstmt uintptr, idx1 int, value int64) (err error) {
 	return nil
 }
 
-// const char *sqlite3_bind_parameter_name(sqlite3_stmt*, int);
+// C documentation
+//
+//	const char *sqlite3_bind_parameter_name(sqlite3_stmt*, int);
 func (c *conn) bindParameterName(pstmt uintptr, i int) (string, error) {
 	p := sqlite3.Xsqlite3_bind_parameter_name(c.tls, pstmt, int32(i))
 	return libc.GoString(p), nil
 }
 
-// int sqlite3_bind_parameter_count(sqlite3_stmt*);
+// C documentation
+//
+//	int sqlite3_bind_parameter_count(sqlite3_stmt*);
 func (c *conn) bindParameterCount(pstmt uintptr) (_ int, err error) {
 	r := sqlite3.Xsqlite3_bind_parameter_count(c.tls, pstmt)
 	return int(r), nil
 }
 
-// int sqlite3_finalize(sqlite3_stmt *pStmt);
+// C documentation
+//
+//	int sqlite3_finalize(sqlite3_stmt *pStmt);
 func (c *conn) finalize(pstmt uintptr) error {
 	if rc := sqlite3.Xsqlite3_finalize(c.tls, pstmt); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1186,13 +1227,15 @@ func (c *conn) finalize(pstmt uintptr) error {
 	return nil
 }
 
-// int sqlite3_prepare_v2(
-//   sqlite3 *db,            /* Database handle */
-//   const char *zSql,       /* SQL statement, UTF-8 encoded */
-//   int nByte,              /* Maximum length of zSql in bytes. */
-//   sqlite3_stmt **ppStmt,  /* OUT: Statement handle */
-//   const char **pzTail     /* OUT: Pointer to unused portion of zSql */
-// );
+// C documentation
+//
+//	int sqlite3_prepare_v2(
+//	sqlite3 *db,            /* Database handle */
+//	const char *zSql,       /* SQL statement, UTF-8 encoded */
+//	int nByte,              /* Maximum length of zSql in bytes. */
+//	sqlite3_stmt **ppStmt,  /* OUT: Statement handle */
+//	const char **pzTail     /* OUT: Pointer to unused portion of zSql */
+//	);
 func (c *conn) prepareV2(zSQL *uintptr) (pstmt uintptr, err error) {
 	var ppstmt, pptail uintptr
 
@@ -1224,7 +1267,9 @@ func (c *conn) prepareV2(zSQL *uintptr) (pstmt uintptr, err error) {
 	}
 }
 
-// void sqlite3_interrupt(sqlite3*);
+// C documentation
+//
+//	void sqlite3_interrupt(sqlite3*);
 func (c *conn) interrupt(pdb uintptr) (err error) {
 	c.Lock() // Defend against race with .Close invoked by context handling.
 
@@ -1236,7 +1281,9 @@ func (c *conn) interrupt(pdb uintptr) (err error) {
 	return nil
 }
 
-// int sqlite3_extended_result_codes(sqlite3*, int onoff);
+// C documentation
+//
+//	int sqlite3_extended_result_codes(sqlite3*, int onoff);
 func (c *conn) extendedResultCodes(on bool) error {
 	if rc := sqlite3.Xsqlite3_extended_result_codes(c.tls, c.db, libc.Bool32(on)); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1245,12 +1292,14 @@ func (c *conn) extendedResultCodes(on bool) error {
 	return nil
 }
 
-// int sqlite3_open_v2(
-//   const char *filename,   /* Database filename (UTF-8) */
-//   sqlite3 **ppDb,         /* OUT: SQLite db handle */
-//   int flags,              /* Flags */
-//   const char *zVfs        /* Name of VFS module to use */
-// );
+// C documentation
+//
+//	int sqlite3_open_v2(
+//	const char *filename,   /* Database filename (UTF-8) */
+//	sqlite3 **ppDb,         /* OUT: SQLite db handle */
+//	int flags,              /* Flags */
+//	const char *zVfs        /* Name of VFS module to use */
+//	);
 func (c *conn) openV2(name, vfsName string, flags int32) (uintptr, error) {
 	var p, s, vfs uintptr
 
@@ -1302,7 +1351,9 @@ func (c *conn) free(p uintptr) {
 	}
 }
 
-// const char *sqlite3_errstr(int);
+// C documentation
+//
+//	const char *sqlite3_errstr(int);
 func (c *conn) errstr(rc int32) error {
 	p := sqlite3.Xsqlite3_errstr(c.tls, rc)
 	str := libc.GoString(p)
@@ -1366,7 +1417,9 @@ func (c *conn) Close() (err error) {
 	return nil
 }
 
-// int sqlite3_close_v2(sqlite3*);
+// C documentation
+//
+//	int sqlite3_close_v2(sqlite3*);
 func (c *conn) closeV2(db uintptr) error {
 	if rc := sqlite3.Xsqlite3_close_v2(c.tls, db); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -2207,7 +2260,9 @@ func finalTrampoline(tls *libc.TLS, ctx uintptr) {
 	xAggregateContext.ids.reclaim(id)
 }
 
-// int sqlite3_limit(sqlite3*, int id, int newVal);
+// C documentation
+//
+//	int sqlite3_limit(sqlite3*, int id, int newVal);
 func (c *conn) limit(id int, newVal int) int {
 	return int(sqlite3.Xsqlite3_limit(c.tls, c.db, int32(id), int32(newVal)))
 }
