@@ -440,7 +440,7 @@ func (r *rows) ColumnTypeScanType(index int) reflect.Type {
 	case sqlite3.SQLITE_TEXT:
 		return reflect.TypeOf("")
 	case sqlite3.SQLITE_BLOB:
-		return reflect.SliceOf(reflect.TypeOf([]byte{}))
+		return reflect.TypeOf([]byte(nil))
 	case sqlite3.SQLITE_NULL:
 		return reflect.TypeOf(nil)
 	default:

@@ -2292,6 +2292,49 @@ func TestConstraintUniqueError(t *testing.T) {
 	}
 }
 
+func TestColumnTypeScanType(t *testing.T) {
+	db, err := sql.Open(driverName, "file::memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS testtable (integer INTEGER, float FLOAT, text TEXT, blob BLOB)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("INSERT INTO testtable (integer, float, text, blob) VALUES (?, ?, ?, ?)", 42, 42.0, "Six by nine.", []byte("Six by nine."))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rows, err := db.Query("SELECT * FROM testtable")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+
+	types, err := rows.ColumnTypes()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(types) != 4 {
+		t.Fatalf("rows.ColumnTypes returned unexpected types length: %d", len(types))
+	}
+
+	args := make([]any, len(types))
+	for i := range args {
+		args[i] = reflect.New(types[i].ScanType()).Interface()
+	}
+	for rows.Next() {
+		err = rows.Scan(args...)
+		if err != nil {
+			t.Fatalf("failed to scan row: %v", err)
+		}
+	}
+}
+
 // https://gitlab.com/cznic/sqlite/-/issues/92
 func TestBeginMode(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "")
