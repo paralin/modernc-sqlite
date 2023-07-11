@@ -94,9 +94,13 @@
 //
 // # Changelog
 //
+// 2023-07-11 v1.24.0:
+//
+// Add (*conn).{Serialize,Deserialize,NewBackup,NewRestore} methods, add Backup type.
+//
 // 2023-06-01 v1.23.0:
 //
-// # Allow registering aggregate functions
+// Allow registering aggregate functions.
 //
 // 2023-04-22 v1.22.0:
 //
