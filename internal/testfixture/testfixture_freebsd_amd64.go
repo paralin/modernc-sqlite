@@ -2872,6 +2872,7 @@ const (
 	CLD_STOPPED                           = 5
 	CLD_TRAPPED                           = 4
 	FPE_FLTDIV                            = 3
+	FPE_FLTIDO                            = 9
 	FPE_FLTINV                            = 7
 	FPE_FLTOVF                            = 4
 	FPE_FLTRES                            = 6
@@ -3107,6 +3108,7 @@ const (
 	CPU_WHICH_JAIL                        = 5
 	CPU_WHICH_PID                         = 2
 	CPU_WHICH_TID                         = 1
+	CPU_WHICH_TIDPID                      = 9
 	N_THREAD                              = 26
 	PTHREAD_BARRIER_SERIAL_THREAD         = -1
 	PTHREAD_CANCEL_ASYNCHRONOUS           = 2
@@ -15530,45 +15532,62 @@ type bintime = struct {
 	Ffrac uint64_t
 }
 
-func sbttons(tls *libc.TLS, _sbt sbintime_t) int64_t {
-	var ns uint64_t
+func __stime64_scale32_ceil(tls *libc.TLS, x int64_t, factor int32_t, divisor int32_t) int64_t {
+	var rem int64_t = x % int64_t(divisor)
 
-	ns = uint64_t(_sbt)
-	if ns >= uint64(int64(1)<<32) {
-		ns = ns >> 32 * uint64(1000000000)
-	} else {
-		ns = uint64(0)
-	}
-
-	return int64_t(ns + uint64_t(int64(1000000000)*(_sbt&int64(0xffffffff))>>32))
+	return x/int64_t(divisor)*int64_t(factor) + (rem*int64_t(factor)+int64_t(divisor)-int64(1))/int64_t(divisor)
 }
 
-func nstosbt(tls *libc.TLS, _ns int64_t) sbintime_t {
-	var sb sbintime_t = int64(0)
+func __stime64_scale32_floor(tls *libc.TLS, x int64_t, factor int32_t, divisor int32_t) int64_t {
+	var rem int64_t = x % int64_t(divisor)
 
-	if _ns >= int64(1000000000) {
-		sb = _ns / int64(1000000000) * (int64(1) << 32)
-		_ns = _ns % int64(1000000000)
-	}
-
-	sb = sbintime_t(uint64(sb) + (uint64(_ns)*9223372037+uint64(0x7fffffff))>>31)
-	return sb
+	return x/int64_t(divisor)*int64_t(factor) + rem*int64_t(factor)/int64_t(divisor)
 }
 
-func sbttous(tls *libc.TLS, _sbt sbintime_t) int64_t {
-	return int64(1000000) * _sbt >> 32
+func __utime64_scale32_ceil(tls *libc.TLS, x uint64_t, factor uint32_t, divisor uint32_t) uint64_t {
+	var rem uint64_t = x % uint64_t(divisor)
+
+	return x/uint64_t(divisor)*uint64_t(factor) + (rem*uint64_t(factor)+uint64_t(divisor)-uint64(1))/uint64_t(divisor)
 }
 
-func ustosbt(tls *libc.TLS, _us int64_t) sbintime_t {
-	var sb sbintime_t = int64(0)
+func __utime64_scale32_floor(tls *libc.TLS, x uint64_t, factor uint32_t, divisor uint32_t) uint64_t {
+	var rem uint64_t = x % uint64_t(divisor)
 
-	if _us >= int64(1000000) {
-		sb = _us / int64(1000000) * (int64(1) << 32)
-		_us = _us % int64(1000000)
-	}
+	return x/uint64_t(divisor)*uint64_t(factor) + rem*uint64_t(factor)/uint64_t(divisor)
+}
 
-	sb = sbintime_t(uint64(sb) + (uint64(_us)*9223372036855+uint64(0x7fffffff))>>31)
-	return sb
+func __stime64_scale64_ceil(tls *libc.TLS, x int64_t, factor int64_t, divisor int64_t) int64_t {
+	var gcd int64_t = ^factor&(factor-int64(1)) & ^divisor & (divisor-int64(1)) + int64(1)
+
+	return __stime64_scale32_ceil(tls, x, int32(factor/gcd), int32(divisor/gcd))
+}
+
+func __stime64_scale64_floor(tls *libc.TLS, x int64_t, factor int64_t, divisor int64_t) int64_t {
+	var gcd int64_t = ^factor&(factor-int64(1)) & ^divisor & (divisor-int64(1)) + int64(1)
+
+	return __stime64_scale32_floor(tls, x, int32(factor/gcd), int32(divisor/gcd))
+}
+
+func __utime64_scale64_floor(tls *libc.TLS, x uint64_t, factor uint64_t, divisor uint64_t) uint64_t {
+	var gcd uint64_t = ^factor&(factor-uint64(1)) & ^divisor & (divisor-uint64(1)) + uint64(1)
+
+	return __utime64_scale32_floor(tls, x, uint32(factor/gcd), uint32(divisor/gcd))
+}
+
+func sbttons(tls *libc.TLS, sbt sbintime_t) int64_t {
+	return __stime64_scale64_floor(tls, sbt, int64(1000000000), int64(1)<<32)
+}
+
+func nstosbt(tls *libc.TLS, ns int64_t) sbintime_t {
+	return __stime64_scale64_ceil(tls, ns, int64(1)<<32, int64(1000000000))
+}
+
+func sbttous(tls *libc.TLS, sbt sbintime_t) int64_t {
+	return __stime64_scale64_floor(tls, sbt, int64(1000000), int64(1)<<32)
+}
+
+func ustosbt(tls *libc.TLS, us int64_t) sbintime_t {
+	return __stime64_scale64_ceil(tls, us, int64(1)<<32, int64(1000000))
 }
 
 type itimerval = struct {

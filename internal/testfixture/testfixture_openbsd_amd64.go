@@ -741,7 +741,7 @@ const (
 	TCL_PARSE_QUOTE_EXTRA                 = 1
 	TCL_PARSE_SUCCESS                     = 0
 	TCL_PARSE_SYNTAX                      = 8
-	TCL_PATCH_LEVEL                       = "8.6.12"
+	TCL_PATCH_LEVEL                       = "8.6.13"
 	TCL_READABLE                          = 2
 	TCL_REG_ADVANCED                      = 000003
 	TCL_REG_ADVF                          = 000002
@@ -758,7 +758,7 @@ const (
 	TCL_REG_NOTEOL                        = 0002
 	TCL_REG_QUOTE                         = 000004
 	TCL_RELEASE_LEVEL                     = 2
-	TCL_RELEASE_SERIAL                    = 12
+	TCL_RELEASE_SERIAL                    = 13
 	TCL_RESULT_SIZE                       = 200
 	TCL_RETURN                            = 2
 	TCL_SERVICE_ALL                       = 1
@@ -7104,6 +7104,29 @@ type TclStubs1 = struct {
 	Freserved657                            uintptr
 	Freserved658                            uintptr
 	Freserved659                            uintptr
+	Freserved660                            uintptr
+	Freserved661                            uintptr
+	Freserved662                            uintptr
+	Freserved663                            uintptr
+	Freserved664                            uintptr
+	Freserved665                            uintptr
+	Freserved666                            uintptr
+	Freserved667                            uintptr
+	Freserved668                            uintptr
+	Freserved669                            uintptr
+	Freserved670                            uintptr
+	Freserved671                            uintptr
+	Freserved672                            uintptr
+	Freserved673                            uintptr
+	Freserved674                            uintptr
+	Freserved675                            uintptr
+	Freserved676                            uintptr
+	Freserved677                            uintptr
+	Freserved678                            uintptr
+	Freserved679                            uintptr
+	Freserved680                            uintptr
+	Freserved681                            uintptr
+	Freserved682                            uintptr
 	FtclUnusedStubEntry                     uintptr
 }
 

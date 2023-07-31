@@ -2248,7 +2248,7 @@ const (
 	X_POSIX_SEMAPHORES                              = -1
 	X_POSIX_SHARED_MEMORY_OBJECTS                   = -1
 	X_POSIX_SHELL                                   = 200112
-	X_POSIX_SPAWN                                   = -1
+	X_POSIX_SPAWN                                   = 200112
 	X_POSIX_SPIN_LOCKS                              = -1
 	X_POSIX_SPORADIC_SERVER                         = -1
 	X_POSIX_SYNCHRONIZED_IO                         = -1
@@ -3988,6 +3988,7 @@ const (
 	MAP_RESILIENT_CODESIGN                          = 0x2000
 	MAP_RESILIENT_MEDIA                             = 0x4000
 	MAP_SHARED                                      = 0x0001
+	MAP_TPRO                                        = 0x80000
 	MAP_TRANSLATED_ALLOW_EXECUTE                    = 0x20000
 	MAP_UNIX03                                      = 0x40000
 	MCL_CURRENT                                     = 0x0001

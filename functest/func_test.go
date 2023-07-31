@@ -26,7 +26,7 @@ import (
 var finalCalled bool
 
 type sumFunction struct {
-	sum int64
+	sum         int64
 	finalCalled *bool
 }
 

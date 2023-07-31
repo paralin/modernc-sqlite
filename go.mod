@@ -8,7 +8,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
 	modernc.org/ccgo/v3 v3.16.13
-	modernc.org/libc v1.22.5
+	modernc.org/libc v1.24.1
 	modernc.org/mathutil v1.5.0
 	modernc.org/tcl v1.15.2
 )
@@ -25,7 +25,7 @@ require (
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect
 	modernc.org/httpfs v1.0.6 // indirect
-	modernc.org/memory v1.5.0 // indirect
+	modernc.org/memory v1.6.0 // indirect
 	modernc.org/opt v0.1.3 // indirect
 	modernc.org/strutil v1.1.3 // indirect
 	modernc.org/token v1.0.1 // indirect
