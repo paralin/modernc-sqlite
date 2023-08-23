@@ -1769,7 +1769,7 @@ var d = &Driver{udfs: make(map[string]*userDefinedFunction)}
 
 func newDriver() *Driver { return d }
 
-// Open returns a new connection to the database.  The name is a string in a
+// Open returns a new connection to the database. The name is a string in a
 // driver-specific format.
 //
 // Open may return a cached connection (one previously closed), but doing so is
@@ -1778,14 +1778,14 @@ func newDriver() *Driver { return d }
 //
 // The returned connection is only used by one goroutine at a time.
 //
-// If name contains a '?', what follows is treated as a query string. This
-// driver supports the following query parameters:
+// The name may be a filename, e.g., "/tmp/mydata.sqlite", or a URI, in which
+// case it may include a '?' followed by one or more query parameters.
+// For example, "file:///tmp/mydata.sqlite?_pragma=foreign_keys(1)&_time_format=sqlite".
+// The supported query parameters are:
 //
 // _pragma: Each value will be run as a "PRAGMA ..." statement (with the PRAGMA
-// keyword added for you). May be specified more than once. Example:
-// "_pragma=foreign_keys(1)" will enable foreign key enforcement. More
-// information on supported PRAGMAs is available from the SQLite documentation:
-// https://www.sqlite.org/pragma.html
+// keyword added for you). May be specified more than once, '&'-separated. For more
+// information on supported PRAGMAs see: https://www.sqlite.org/pragma.html
 //
 // _time_format: The name of a format to use when writing time values to the
 // database. Currently the only supported value is "sqlite", which corresponds
@@ -1794,9 +1794,7 @@ func newDriver() *Driver { return d }
 // the default String() format will be used.
 //
 // _txlock: The locking behavior to use when beginning a transaction. May be
-// "deferred", "immediate", or "exclusive" (case insensitive). The default is to
-// not specify one, which SQLite maps to "deferred". More information is
-// available at
+// "deferred" (the default), "immediate", or "exclusive" (case insensitive). See:
 // https://www.sqlite.org/lang_transaction.html#deferred_immediate_and_exclusive_transactions
 func (d *Driver) Open(name string) (conn driver.Conn, err error) {
 	if dmesgs {
