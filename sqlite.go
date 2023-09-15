@@ -1540,6 +1540,91 @@ func (c *conn) createFunctionInternal(fun *userDefinedFunction) error {
 	return nil
 }
 
+type collation struct {
+	zName uintptr
+	pApp  uintptr
+	enc   int32
+}
+
+// RegisterCollationUtf8 makes a Go function available as a collation named zName.
+// impl receives two UTF-8 strings: left and right.
+// The result needs to be:
+//
+// - 0 if left == right
+// - 1 if left < right
+// - +1 if left > right
+//
+// impl must always return the same result given the same inputs.
+// Additionally, it must have the following properties for all strings A, B and C:
+// - if A==B, then B==A
+// - if A==B and B==C, then A==C
+// - if A<B, then B>A
+// - if A<B and B<C, then A<C.
+//
+// The new collation will be available to all new connections opened after
+// executing RegisterCollationUtf8.
+func RegisterCollationUtf8(
+	zName string,
+	impl func(left, right string) int,
+) error {
+	return registerCollation(zName, impl, sqlite3.SQLITE_UTF8)
+}
+
+// MustRegisterCollationUtf8 is like RegisterCollationUtf8 but panics on error.
+func MustRegisterCollationUtf8(
+	zName string,
+	impl func(left, right string) int,
+) {
+	if err := RegisterCollationUtf8(zName, impl); err != nil {
+		panic(err)
+	}
+}
+
+func registerCollation(
+	zName string,
+	impl func(left, right string) int,
+	enc int32,
+) error {
+	if _, ok := d.collations[zName]; ok {
+		return fmt.Errorf("a collation %q is already registered", zName)
+	}
+
+	// dont free, collations registered on the driver live as long as the program
+	name, err := libc.CString(zName)
+	if err != nil {
+		return err
+	}
+
+	xCollations.mu.Lock()
+	id := xCollations.ids.next()
+	xCollations.m[id] = impl
+	xCollations.mu.Unlock()
+
+	d.collations[zName] = &collation{
+		zName: name,
+		pApp:  id,
+		enc:   enc,
+	}
+
+	return nil
+}
+
+func (c *conn) createCollationInternal(coll *collation) error {
+	rc := sqlite3.Xsqlite3_create_collation_v2(
+		c.tls,
+		c.db,
+		coll.zName,
+		coll.enc,
+		coll.pApp,
+		cFuncPointer(collationTrampoline),
+		0,
+	)
+	if rc != sqlite3.SQLITE_OK {
+		return c.errstr(rc)
+	}
+	return nil
+}
+
 // Execer is an optional interface that may be implemented by a Conn.
 //
 // If a Conn does not implement Execer, the sql package's DB.Exec will first
@@ -1763,9 +1848,14 @@ func (b *Backup) Finish() error {
 type Driver struct {
 	// user defined functions that are added to every new connection on Open
 	udfs map[string]*userDefinedFunction
+	// collations that are added to every new connection on Open
+	collations map[string]*collation
 }
 
-var d = &Driver{udfs: make(map[string]*userDefinedFunction)}
+var d = &Driver{
+	udfs:       make(map[string]*userDefinedFunction, 0),
+	collations: make(map[string]*collation, 0),
+}
 
 func newDriver() *Driver { return d }
 
@@ -1809,6 +1899,12 @@ func (d *Driver) Open(name string) (conn driver.Conn, err error) {
 
 	for _, udf := range d.udfs {
 		if err = c.createFunctionInternal(udf); err != nil {
+			c.Close()
+			return nil, err
+		}
+	}
+	for _, coll := range d.collations {
+		if err = c.createCollationInternal(coll); err != nil {
 			c.Close()
 			return nil, err
 		}
@@ -2098,6 +2194,14 @@ var (
 	}{
 		m: make(map[uintptr]AggregateFunction),
 	}
+
+	xCollations = struct {
+		mu  sync.RWMutex
+		m   map[uintptr]func(string, string) int
+		ids idGen
+	}{
+		m: make(map[uintptr]func(string, string) int),
+	}
 )
 
 type idGen struct {
@@ -2263,6 +2367,30 @@ func finalTrampoline(tls *libc.TLS, ctx uintptr) {
 	defer xAggregateContext.mu.Unlock()
 	delete(xAggregateContext.m, id)
 	xAggregateContext.ids.reclaim(id)
+}
+
+func collationTrampoline(tls *libc.TLS, pApp uintptr, nLeft int32, zLeft uintptr, nRight int32, zRight uintptr) int32 {
+	xCollations.mu.RLock()
+	xCollation := xCollations.m[pApp]
+	xCollations.mu.RUnlock()
+
+	left := string(libc.GoBytes(zLeft, int(nLeft)))
+	right := string(libc.GoBytes(zRight, int(nRight)))
+
+	// res is of type int, which can be 64-bit wide
+	// Since we just need to know if the value is positive, negative, or zero, we can ensure it's -1, 0, +1
+	res := xCollation(left, right)
+	switch {
+	case res < 0:
+		return -1
+	case res == 0:
+		return 0
+	case res > 0:
+		return 1
+	default:
+		// Should never hit here, make the compiler happy
+		return 0
+	}
 }
 
 // C documentation
