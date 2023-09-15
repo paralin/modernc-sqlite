@@ -3133,3 +3133,88 @@ func testIssue153(t *testing.T, query string) {
 		t.Fatal(err)
 	}
 }
+
+func TestCollation(t *testing.T) {
+	var invoked int64
+
+	MustRegisterCollationUtf8("TESTCOLLATION", func(left, right string) int {
+		atomic.AddInt64(&invoked, 1)
+		return strings.Compare(strings.ToLower(left), strings.ToLower(right))
+	})
+
+	type kv struct {
+		key int
+		val string
+	}
+
+	withDB := func(test func(db *sql.DB)) func(t *testing.T) {
+		return func(t *testing.T) {
+			db, err := sql.Open("sqlite", "file::memory:")
+			if err != nil {
+				t.Fatalf("failed to open database: %v", err)
+			}
+			defer db.Close()
+
+			_, err = db.Exec("CREATE TABLE mytable (key INTEGER, val TEXT COLLATE TESTCOLLATION)")
+			if err != nil {
+				t.Fatalf("failed to create table: %v", err)
+			}
+
+			test(db)
+		}
+	}
+
+	t.Run("use TESTCOLLATION", withDB(func(db *sql.DB) {
+		atomic.StoreInt64(&invoked, 0)
+
+		const expectAdded = 5
+		res, err := db.Exec(`INSERT INTO mytable (key, val) VALUES
+			(1, "BBB"),
+			(2, "AAA"),
+			(3, "CCC"),
+			(4, "aaa"),
+			(5, "bbb")`)
+		if err != nil {
+			t.Fatalf("failed to add records: %v", err)
+		}
+		n, _ := res.RowsAffected()
+		if n != expectAdded {
+			t.Fatalf("invalid number of rows added; expected: %d, got: %d", expectAdded, n)
+		}
+
+		assertRowsFn := func(expect []kv, q string, args ...any) func(t *testing.T) {
+			return func(t *testing.T) {
+				rows, err := db.Query(q, args...)
+				if err != nil {
+					t.Fatalf("failed to perform query: %v", err)
+				}
+				defer rows.Close()
+
+				found := []kv{}
+				for rows.Next() {
+					r := kv{}
+					err = rows.Scan(&r.key, &r.val)
+					if err != nil {
+						t.Fatalf("failed to scan row: %v", err)
+					}
+					found = append(found, r)
+				}
+
+				if !reflect.DeepEqual(found, expect) {
+					t.Fatalf("got: '%#v'; wanted: '%#v'", found, expect)
+				}
+			}
+		}
+
+		t.Run("select aaa", assertRowsFn(
+			[]kv{{2, "AAA"}, {4, "aaa"}},
+			"SELECT * FROM mytable WHERE val=?",
+			"aaa",
+		))
+
+		t.Run("select all rows in order", assertRowsFn(
+			[]kv{{2, "AAA"}, {4, "aaa"}, {1, "BBB"}, {5, "bbb"}, {3, "CCC"}},
+			"SELECT * FROM mytable ORDER BY val",
+		))
+	}))
+}
