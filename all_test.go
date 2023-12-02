@@ -1919,6 +1919,37 @@ func checkPragmas(db *sql.DB, pragmas []pragmaCfg) error {
 	return nil
 }
 
+func TestConnectionHook(t *testing.T) {
+	callCount := 0
+	connStr := ":memory:?_connHookTest=1"
+	driverName := "sqlite_conn_hook_test"
+
+	testDriver := Driver{}
+	testDriver.RegisterConnectionHook(func(conn ExecQuerierContext, dsn string) error {
+		if conn != nil && dsn == connStr {
+			callCount++
+		}
+
+		return nil
+	})
+
+	sql.Register(driverName, &testDriver)
+
+	db, err := sql.Open(driverName, connStr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("SELECT 1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if callCount == 0 {
+		t.Fatal("connection hook: call count was 0")
+	}
+}
+
 func TestInMemory(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "")
 	if err != nil {
