@@ -47,6 +47,11 @@ func TestTclTest(t *testing.T) {
 		// See https://gitlab.com/cznic/sqlite/-/issues/23#note_599920077 for details.
 		blacklist["symlink2.test"] = struct{}{}
 	}
+	switch fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH) {
+	case "windows/arm64":
+		// See https://gitlab.com/cznic/sqlite/-/issues/167
+		blacklist["shared.test"] = struct{}{}
+	}
 	tclTests := "testdata/tcl/*"
 	m, err := filepath.Glob(filepath.FromSlash(tclTests))
 	if err != nil {
