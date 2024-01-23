@@ -3249,3 +3249,53 @@ func TestCollation(t *testing.T) {
 		))
 	}))
 }
+
+// https://gitlab.com/cznic/sqlite/-/issues/171#note_1737746192
+func TestIssue171(t *testing.T) {
+	tempDir := t.TempDir()
+	db, err := sql.Open("sqlite", fmt.Sprintf("file:%s?_pragma=journal_mode(WAL)", filepath.Join(tempDir, "db.db")))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec(`DROP TABLE IF EXISTS "proxy_urls";
+	CREATE TABLE "proxy_urls" (
+	  "id" integer PRIMARY KEY AUTOINCREMENT,
+	  "created_at" datetime,
+	  "updated_at" datetime,
+	  "deleted_at" datetime,
+	  "url" text,
+	  "retry" integer,
+	  "available" numeric,
+	  "timeout" integer DEFAULT 0
+	);`)
+	if err != nil {
+		panic(err)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for i := 0; i < 1000; i++ {
+			_, err = db.Exec(fmt.Sprintf(`INSERT INTO "main"."proxy_urls" ("created_at", "updated_at", "deleted_at", "url", "retry", "available", "timeout") VALUES ('2024-01-23 15:56:11.3099801+08:00', '2024-01-23 15:56:13.7905746+08:00', NULL, 'socks5://127.0.0.%d:7777', 1, 0, 0);`, i))
+			if err != nil {
+				t.Error(err)
+			}
+		}
+	}()
+	wg.Wait()
+	if db.Close() != nil {
+		panic(err)
+	}
+
+	m, err := filepath.Glob(filepath.Join(tempDir, "db.db-*"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(m) != 0 {
+		t.Fatal(m)
+	}
+}

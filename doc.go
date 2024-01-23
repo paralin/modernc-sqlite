@@ -94,7 +94,7 @@
 //
 // # Changelog
 //
-// 2023-12-14 v1.28.0: 
+// 2023-12-14 v1.28.0:
 //
 //	(*Driver).RegisterConnectionHook: added
 //	ConnectionHookFn: added
