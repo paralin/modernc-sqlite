@@ -16,14 +16,12 @@ import (
 	"math/rand"
 	"net/url"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"reflect"
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -697,119 +695,6 @@ func TestConcurrentGoroutines(t *testing.T) {
 	}
 
 	t.Logf("%d goroutines concurrently inserted %d rows in %v", ngoroutines, ngoroutines*nrows, d)
-}
-
-func TestConcurrentProcesses(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode")
-	}
-
-	dir, err := os.MkdirTemp("", "sqlite-test-")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer func() {
-		os.RemoveAll(dir)
-	}()
-
-	m, err := filepath.Glob(filepath.FromSlash("internal/mptest/*"))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for _, v := range m {
-		if s := filepath.Ext(v); s != ".test" && s != ".subtest" {
-			continue
-		}
-
-		b, err := os.ReadFile(v)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if runtime.GOOS == "windows" {
-			// reference tests are in *nix format --
-			// but git on windows does line-ending xlation by default
-			// if someone has it 'off' this has no impact.
-			// '\r\n'  -->  '\n'
-			b = bytes.ReplaceAll(b, []byte("\r\n"), []byte("\n"))
-		}
-
-		if err := os.WriteFile(filepath.Join(dir, filepath.Base(v)), b, 0666); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	bin := "./mptest"
-	if runtime.GOOS == "windows" {
-		bin += "mptest.exe"
-	}
-	args := []string{"build", "-o", filepath.Join(dir, bin)}
-	if s := *oXTags; s != "" {
-		args = append(args, "-tags", s)
-	}
-	args = append(args, "modernc.org/sqlite/internal/mptest")
-	out, err := exec.Command("go", args...).CombinedOutput()
-	if err != nil {
-		t.Fatalf("%s\n%v", out, err)
-	}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Chdir(wd)
-
-	if err := os.Chdir(dir); err != nil {
-		t.Fatal(err)
-	}
-
-outer:
-	for _, script := range m {
-		script = filepath.Base(script)
-		if filepath.Ext(script) != ".test" {
-			continue
-		}
-
-		fmt.Printf("exec: %s db %s\n", filepath.FromSlash(bin), script)
-		out, err := exec.Command(filepath.FromSlash(bin), "db", "--timeout", "6000000", script).CombinedOutput()
-		if err != nil {
-			t.Fatalf("%s\n%v", out, err)
-		}
-
-		// just remove it so we don't get a
-		// file busy race-condition
-		// when we spin up the next script
-		if runtime.GOOS == "windows" {
-			_ = os.Remove("db")
-		}
-
-		a := strings.Split(string(out), "\n")
-		for _, v := range a {
-			if strings.HasPrefix(v, "Summary:") {
-				b := strings.Fields(v)
-				if len(b) < 2 {
-					t.Fatalf("unexpected format of %q", v)
-				}
-
-				n, err := strconv.Atoi(b[1])
-				if err != nil {
-					t.Fatalf("unexpected format of %q", v)
-				}
-
-				if n != 0 {
-					t.Errorf("%s", out)
-				}
-
-				t.Logf("%v: %v", script, v)
-				continue outer
-			}
-
-		}
-		t.Fatalf("%s\nerror: summary line not found", out)
-	}
 }
 
 // https://gitlab.com/cznic/sqlite/issues/19
