@@ -74,7 +74,15 @@ func main() {
 		for n := ast.SourceFile.TopLevelDeclList; n != nil; n = n.List {
 			switch x := n.TopLevelDecl.(type) {
 			case *gc.ConstDeclNode:
-				fmt.Fprintln(b, x.Source(true))
+				switch y := x.ConstSpec.(type) {
+				case *gc.ConstSpecNode:
+					if y.IDENT.Src() != "SQLITE_TRANSIENT" {
+						fmt.Fprintln(b, x.Source(true))
+					}
+				default:
+					panic(fmt.Sprintf("%v: %T %q", x.Position(), y, x.Source(false)))
+				}
+
 			case *gc.FunctionDeclNode:
 				fmt.Fprintln(b, x.Source(true))
 			case *gc.TypeDeclNode:
@@ -98,19 +106,6 @@ func main() {
 		}
 
 		b.WriteString(`
-const SQLITE_FORMAT = 24
-const SQLITE_INTERNAL = 2
-const SQLITE_IOERR_FSTAT = (SQLITE_IOERR | (7 << 8))
-const SQLITE_IOERR_READ = SQLITE_IOERR | (1 << 8)
-const SQLITE_IOERR_SHORT_READ = (SQLITE_IOERR | (2 << 8))
-const SQLITE_MUTEX_STATIC_APP1 = 8
-const SQLITE_MUTEX_STATIC_APP2 = 9
-const SQLITE_MUTEX_STATIC_APP3 = 10
-const SQLITE_MUTEX_STATIC_MASTER = SQLITE_MUTEX_STATIC_MAIN
-const SQLITE_MUTEX_STATIC_VFS2 = 12
-const SQLITE_MUTEX_STATIC_VFS3 = 13
-const SQLITE_NOLFS = 22
-
 type Sqlite3_int64 = sqlite3_int64
 type Sqlite3_mutex_methods = sqlite3_mutex_methods
 type Sqlite3_value = sqlite3_value
