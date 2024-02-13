@@ -41,7 +41,7 @@
 //
 // # Changelog
 //
-// 2024-02-TBA: v1.29.0
+// 2024-02-13: v1.29.0
 //
 // Upgrade to SQLite 3.45.1, release notes at https://sqlite.org/releaselog/3_45_1.html.
 //
