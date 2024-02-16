@@ -754,4 +754,110 @@ func TestRegisteredFunctions(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("QueryContext with context expired", func(tt *testing.T) {
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			conn, err := db.Conn(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			_, err = conn.QueryContext(ctx, "select count(*) from t")
+			if err == nil {
+				tt.Fatalf("unexpected success while context is canceled")
+			}
+		})
+	})
+
+	t.Run("QueryContext with context expiring", func(tt *testing.T) {
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			conn, err := db.Conn(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for try := 0; try < 1000; try++ {
+				ctx, cancel := context.WithCancel(context.Background())
+				go func() {
+					time.Sleep(100 * time.Millisecond)
+					cancel()
+				}()
+
+				for start := time.Now(); time.Since(start) < 200*time.Millisecond; {
+					rows, err := conn.QueryContext(ctx, "select count(*) from t")
+					if err != nil && !(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || strings.Contains(err.Error(), "interrupted (9)")) {
+						tt.Fatalf("unexpected error, was expected context or interrupted error: err=%v", err)
+					} else if err == nil && !rows.Next() {
+						tt.Fatalf("success with no data (try=%d)", try)
+					}
+				}
+			}
+		})
+	})
+
+	t.Run("ExecContext with context expired", func(tt *testing.T) {
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			conn, err := db.Conn(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			_, err = conn.ExecContext(ctx, "insert into t values (?)", "text3")
+			if err == nil {
+				tt.Fatalf("unexpected success while context is canceled")
+			} else if !(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || strings.Contains(err.Error(), "interrupted (9)")) {
+				tt.Fatalf("unexpected error while context is canceled: expected context or interrupted, got %v", err)
+			}
+		})
+	})
+
+	t.Run("ExecContext with context expiring", func(tt *testing.T) {
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			conn, err := db.Conn(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for try := 0; try < 1000; try++ {
+				ctx, cancel := context.WithCancel(context.Background())
+				go func() {
+					time.Sleep(100 * time.Millisecond)
+					cancel()
+				}()
+
+				for start := time.Now(); time.Since(start) < 200*time.Millisecond; {
+					res, err := conn.ExecContext(ctx, "insert into t values (?)", "text3")
+					if err != nil && !(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || strings.Contains(err.Error(), "interrupted (9)")) {
+						tt.Fatalf("unexpected error, was expected context or interrupted error: err=%v", err)
+					} else if err == nil {
+						if rowsAffected, err := res.RowsAffected(); err != nil {
+							tt.Fatal(err)
+						} else if rowsAffected != 1 {
+							tt.Fatalf("success with no inserted data (try=%d)", try)
+						}
+					}
+				}
+			}
+		})
+	})
 }
