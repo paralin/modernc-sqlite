@@ -493,19 +493,18 @@ func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Res
 	var pstmt uintptr
 	var done int32
 	if ctx != nil {
-		ctxDone := ctx.Done()
-		select {
-		case <-ctxDone:
-			return nil, ctx.Err()
-		default:
-		}
-		if ctxDone != nil {
+		if ctxDone := ctx.Done(); ctxDone != nil {
+			select {
+			case <-ctxDone:
+				return nil, ctx.Err()
+			default:
+			}
 			defer interruptOnDone(ctx, s.c, &done)()
 		}
 	}
 
 	defer func() {
-		if ctx != nil && r == nil && err == nil && atomic.LoadInt32(&done) != 0 {
+		if ctx != nil && atomic.LoadInt32(&done) != 0 {
 			r, err = nil, ctx.Err()
 		}
 	}()
@@ -591,13 +590,12 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 	var pstmt uintptr
 	var done int32
 	if ctx != nil {
-		ctxDone := ctx.Done()
-		select {
-		case <-ctxDone:
-			return nil, ctx.Err()
-		default:
-		}
-		if ctxDone != nil {
+		if ctxDone := ctx.Done(); ctxDone != nil {
+			select {
+			case <-ctxDone:
+				return nil, ctx.Err()
+			default:
+			}
 			defer interruptOnDone(ctx, s.c, &done)()
 		}
 	}
@@ -605,7 +603,7 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 	var allocs []uintptr
 
 	defer func() {
-		if ctx != nil && r == nil && err == nil && atomic.LoadInt32(&done) != 0 {
+		if ctx != nil && atomic.LoadInt32(&done) != 0 {
 			r, err = nil, ctx.Err()
 		} else if r == nil && err == nil {
 			r, err = newRows(s.c, pstmt, allocs, true)
