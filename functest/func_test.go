@@ -794,12 +794,21 @@ func TestRegisteredFunctions(t *testing.T) {
 				}()
 
 				for start := time.Now(); time.Since(start) < 200*time.Millisecond; {
-					rows, err := conn.QueryContext(ctx, "select count(*) from t")
-					if err != nil && !(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || strings.Contains(err.Error(), "interrupted (9)")) {
-						tt.Fatalf("unexpected error, was expected context or interrupted error: err=%v", err)
-					} else if err == nil && !rows.Next() {
-						tt.Fatalf("success with no data (try=%d)", try)
-					}
+					func() {
+						rows, err := conn.QueryContext(ctx, "select count(*) from t")
+						if rows != nil {
+							defer rows.Close()
+						}
+						if err != nil && !(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || strings.Contains(err.Error(), "interrupted (9)")) {
+							tt.Fatalf("unexpected error, was expected context or interrupted error: err=%v", err)
+						} else if err == nil && !rows.Next() {
+							if rowsErr := rows.Err(); rowsErr != nil && !(errors.Is(rowsErr, context.Canceled) || errors.Is(rowsErr, context.DeadlineExceeded) || strings.Contains(rowsErr.Error(), "interrupted (9)")) {
+								tt.Fatalf("unexpected error, was expected context or interrupted error: err=%v", err)
+							} else if rowsErr == nil {
+								tt.Fatalf("success with no data (try=%d)", try)
+							}
+						}
+					}()
 				}
 			}
 		})
