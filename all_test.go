@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/google/pprof/profile"
+	util "modernc.org/fileutil/ccgo"
 	"modernc.org/libc"
 	"modernc.org/mathutil"
 	sqlite3 "modernc.org/sqlite/lib"
@@ -97,6 +98,7 @@ func trc(s string, args ...interface{}) string { //TODO-
 // ============================================================================
 
 var (
+	oInner      = flag.Bool("inner", false, "internal use")
 	oRecsPerSec = flag.Bool("recs_per_sec_as_mbps", false, "Show records per second as MB/s.")
 	oXTags      = flag.String("xtags", "", "passed to go build of testfixture in TestTclTest")
 	tempDir     string
@@ -695,6 +697,18 @@ func TestConcurrentGoroutines(t *testing.T) {
 	}
 
 	t.Logf("%d goroutines concurrently inserted %d rows in %v", ngoroutines, ngoroutines*nrows, d)
+
+	if !*oInner {
+		t.Logf("recursively invoking this test with -race\n")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+
+		defer cancel()
+
+		if out, err := util.Shell(ctx, "go", "test", "-v", "-timeout", "1h", "-race", "-run", "TestConcurrentGoroutines", "-inner"); err != nil {
+			t.Fatalf("FAIL err=%v out=%s", err, out)
+		}
+		t.Logf("recursive test -race: PASS")
+	}
 }
 
 // https://gitlab.com/cznic/sqlite/issues/19

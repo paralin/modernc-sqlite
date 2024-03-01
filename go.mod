@@ -5,8 +5,9 @@ go 1.20
 require (
 	github.com/google/pprof v0.0.0-20221118152302-e6195bd50e26
 	github.com/klauspost/cpuid/v2 v2.2.3
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 v1.14.22
 	golang.org/x/sys v0.16.0
+	modernc.org/fileutil v1.3.0
 	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6
 	modernc.org/libc v1.41.0
 	modernc.org/mathutil v1.6.0
