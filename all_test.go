@@ -705,12 +705,12 @@ func TestConcurrentGoroutines(t *testing.T) {
 		defer cancel()
 
 		out, err := util.Shell(ctx, "go", "test", "-v", "-timeout", "1h", "-race", "-run", "TestConcurrentGoroutines", "-inner")
-		switch {
+		switch s := string(out); {
 		case err == nil:
 			t.Logf("recursive test -race: PASS")
 		case
-			strings.Contains(err.Error(), "-race is not supported"),
-			strings.Contains(string(out), "unsupported VMA range"):
+			strings.Contains(s, "-race is not supported"),
+			strings.Contains(s, "unsupported VMA range"):
 
 			t.Logf("recursive test -race: SKIP: %v", err)
 		default:
