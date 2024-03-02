@@ -710,7 +710,7 @@ func TestConcurrentGoroutines(t *testing.T) {
 			t.Logf("recursive test -race: PASS")
 		case
 			strings.Contains(err.Error(), "-race is not supported"),
-			strings.Contains(err.Error(), "unsupported VMA range"):
+			strings.Contains(string(out), "unsupported VMA range"):
 
 			t.Logf("recursive test -race: SKIP: %v", err)
 		default:
