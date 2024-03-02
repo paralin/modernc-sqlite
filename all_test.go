@@ -102,21 +102,6 @@ var (
 	oRecsPerSec = flag.Bool("recs_per_sec_as_mbps", false, "Show records per second as MB/s.")
 	oXTags      = flag.String("xtags", "", "passed to go build of testfixture in TestTclTest")
 	tempDir     string
-	goos        = runtime.GOOS
-	goarch      = runtime.GOARCH
-	target      = fmt.Sprintf("%s/%s", goos, goarch)
-
-	raceDetectorSupport = map[string]struct{}{
-		"linux/amd64":   {},
-		"linux/ppc64le": {},
-		"linux/arm64":   {},
-		"linux/s390x":   {},
-		"freebsd/amd64": {},
-		"netbsd/amd64":  {},
-		"darwin/amd64":  {},
-		"darwin/arm64":  {},
-		"windows/amd64": {},
-	}
 )
 
 func TestMain(m *testing.M) {
@@ -713,17 +698,23 @@ func TestConcurrentGoroutines(t *testing.T) {
 
 	t.Logf("%d goroutines concurrently inserted %d rows in %v", ngoroutines, ngoroutines*nrows, d)
 
-	if _, ok := raceDetectorSupport[target]; ok && !*oInner {
+	if !*oInner {
 		t.Logf("recursively invoking this test with -race\n")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
 
 		defer cancel()
 
-		switch out, err := util.Shell(ctx, "go", "test", "-v", "-timeout", "1h", "-race", "-run", "TestConcurrentGoroutines", "-inner"); {
-		case err != nil:
-			t.Fatalf("FAIL err=%v out=%s", err, out)
-		default:
+		out, err := util.Shell(ctx, "go", "test", "-v", "-timeout", "1h", "-race", "-run", "TestConcurrentGoroutines", "-inner")
+		switch {
+		case err == nil:
 			t.Logf("recursive test -race: PASS")
+		case
+			strings.Contains(err.Error(), "-race is not supported"),
+			strings.Contains(err.Error(), "unsupported VMA range"):
+
+			t.Logf("recursive test -race: SKIP: %v", err)
+		default:
+			t.Fatalf("FAIL err=%v out=%s", err, out)
 		}
 	}
 }
