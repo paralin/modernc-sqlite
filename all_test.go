@@ -704,10 +704,15 @@ func TestConcurrentGoroutines(t *testing.T) {
 
 		defer cancel()
 
-		if out, err := util.Shell(ctx, "go", "test", "-v", "-timeout", "1h", "-race", "-run", "TestConcurrentGoroutines", "-inner"); err != nil {
+		out, err := util.Shell(ctx, "go", "test", "-v", "-timeout", "1h", "-race", "-run", "TestConcurrentGoroutines", "-inner")
+		switch {
+		case err == nil:
+			t.Logf("recursive test -race: PASS")
+		case strings.Contains(err.Error(), "-race is not supported"):
+			t.Logf("recursive test -race: SKIP: %v", err)
+		default:
 			t.Fatalf("FAIL err=%v out=%s", err, out)
 		}
-		t.Logf("recursive test -race: PASS")
 	}
 }
 
