@@ -1647,6 +1647,15 @@ func (c *conn) createCollationInternal(coll *collation) error {
 	return nil
 }
 
+func (c *conn) createUpdateHookInternal(updateHookFn updateHookFn) {
+	sqlite3.Xsqlite3_update_hook(
+		c.tls,
+		c.db,
+		cFuncPointer(updateHookFn),
+		cFuncPointer(func() {}),
+	)
+}
+
 // Execer is an optional interface that may be implemented by a Conn.
 //
 // If a Conn does not implement Execer, the sql package's DB.Exec will first
@@ -1878,6 +1887,26 @@ type ConnectionHookFn func(
 	dsn string,
 ) error
 
+// UpdateHookFn function type for an update hook on the Driver.
+// https://www.sqlite.org/c3ref/update_hook.html
+type updateHookFn func(
+	tls *libc.TLS,
+	x uintptr,
+	op int32,
+	db uintptr,
+	table uintptr,
+	rowId int64,
+)
+
+// UpdateHook function type for an update hook on the Driver.
+// https://www.sqlite.org/c3ref/update_hook.html
+type UpdateHook func(
+	op int32,
+	db string,
+	table string,
+	rowId int64,
+)
+
 // Driver implements database/sql/driver.Driver.
 type Driver struct {
 	// user defined functions that are added to every new connection on Open
@@ -1886,6 +1915,8 @@ type Driver struct {
 	collations map[string]*collation
 	// connection hooks are called after a connection is opened
 	connectionHooks []ConnectionHookFn
+	// update hooks are called after a row is updated, inserted or deleted
+	updateHook updateHookFn
 }
 
 var d = &Driver{
@@ -1952,6 +1983,11 @@ func (d *Driver) Open(name string) (conn driver.Conn, err error) {
 			return nil, fmt.Errorf("connection hook: %w", err)
 		}
 	}
+
+	if d.updateHook != nil {
+		c.createUpdateHookInternal(d.updateHook)
+	}
+
 	return c, nil
 }
 
@@ -2116,6 +2152,14 @@ func (d *Driver) RegisterConnectionHook(fn ConnectionHookFn) {
 // is opened. This is called after all the connection has been set up.
 func RegisterConnectionHook(fn ConnectionHookFn) {
 	d.RegisterConnectionHook(fn)
+}
+
+// RegisterUpdateHook registers a function to be called  be invoked
+// whenever a row is updated, inserted or deleted in a rowid table.
+func (d *Driver) RegisterUpdateHook(fn UpdateHook) {
+	d.updateHook = func(tls *libc.TLS, x uintptr, op int32, db, table uintptr, rowId int64) {
+		fn(op, libc.GoString(db), libc.GoString(table), rowId)
+	}
 }
 
 func origin(skip int) string {
