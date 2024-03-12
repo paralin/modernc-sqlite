@@ -1857,6 +1857,43 @@ func TestConnectionHook(t *testing.T) {
 	}
 }
 
+func TestUpdateHook(t *testing.T) {
+	insertCount := 0
+	updateCount := 0
+	connStr := ":memory:"
+	driverName := "sqlite_update_hook_test"
+
+	testDriver := Driver{}
+	testDriver.RegisterUpdateHook(func(op int32, db string, table string, rowId int64) {
+		if op == sqlite3.SQLITE_INSERT {
+			insertCount++
+		} else if op == sqlite3.SQLITE_UPDATE {
+			updateCount++
+		}
+	})
+
+	sql.Register(driverName, &testDriver)
+
+	db, err := sql.Open(driverName, connStr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec(`
+	create table in_memory_test(i int, f double);
+	insert into in_memory_test values(12, 3.14);
+	update in_memory_test set f='3.141' where i=12;
+	select 1;
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if insertCount != 1 || updateCount != 1 {
+		t.Fatal("update hook: call count is not 1")
+	}
+}
+
 func TestInMemory(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "")
 	if err != nil {
