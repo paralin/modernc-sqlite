@@ -27,6 +27,7 @@
 //	linux	amd64   3.45.1
 //	linux	arm     3.45.1
 //	linux	arm64   3.45.1
+//	linux	loong64 3.45.1
 //	linux	ppc64le 3.45.1
 //	linux	riscv64 3.45.1
 //	linux	s390x   3.45.1
@@ -48,6 +49,10 @@
 // See the discussion at https://gitlab.com/cznic/sqlite/-/issues/177 for more details.
 //
 // # Changelog
+//
+// 2024-03-16: v1.30.0
+//
+// Support new target: linux/loong64
 //
 // 2024-02-13: v1.29.0
 //
