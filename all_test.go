@@ -719,6 +719,116 @@ func TestConcurrentGoroutines(t *testing.T) {
 	}
 }
 
+func TestSingleConn(t *testing.T) {
+	for _, conns := range []string{"single conn", "multiple conns"} {
+		t.Run(conns, func(t *testing.T) { testSingleConn(t, conns) })
+	}
+}
+
+func testSingleConn(t *testing.T, conns string) {
+	const (
+		ngoroutines = 100
+		nrows       = 5000
+	)
+
+	path := filepath.Join(t.TempDir(), "sqlite-test-")
+	db, err := sql.Open(driverName, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	if strings.HasPrefix(conns, "single") {
+		db.SetMaxOpenConns(1)
+	}
+
+	tx, err := db.BeginTx(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := tx.Exec("create table t(i)"); err != nil {
+		t.Fatal(err)
+	}
+
+	prep, err := tx.Prepare("insert into t values(?)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rnd := make(chan int, 100)
+	go func() {
+		lim := ngoroutines * nrows
+		rng, err := mathutil.NewFC32(0, lim-1, false)
+		if err != nil {
+			panic(fmt.Errorf("internal error: %v", err))
+		}
+
+		for i := 0; i < lim; i++ {
+			rnd <- rng.Next()
+		}
+	}()
+
+	start := make(chan int)
+	var wg sync.WaitGroup
+	for i := 0; i < ngoroutines; i++ {
+		wg.Add(1)
+
+		go func(id int) {
+
+			defer wg.Done()
+
+		next:
+			for i := 0; i < nrows; i++ {
+				n := <-rnd
+				var err error
+				for j := 0; j < 10; j++ {
+					if _, err := prep.Exec(n); err == nil {
+						continue next
+					}
+				}
+
+				t.Errorf("id %d, seq %d: %v", id, i, err)
+				return
+			}
+		}(i)
+	}
+	t0 := time.Now()
+	close(start)
+	wg.Wait()
+	if err := tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
+
+	d := time.Since(t0)
+	rows, err := db.Query("select * from t order by i")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var i int
+	for ; rows.Next(); i++ {
+		var j int
+		if err := rows.Scan(&j); err != nil {
+			t.Fatalf("seq %d: %v", i, err)
+		}
+
+		if g, e := j, i; g != e {
+			t.Fatalf("seq %d: got %d, exp %d", i, g, e)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := i, ngoroutines*nrows; g != e {
+		t.Fatalf("got %d rows, expected %d", g, e)
+	}
+
+	t.Logf("%d goroutines concurrently inserted %d rows in %v", ngoroutines, ngoroutines*nrows, d)
+}
+
 // https://gitlab.com/cznic/sqlite/issues/19
 func TestIssue19(t *testing.T) {
 	const (
