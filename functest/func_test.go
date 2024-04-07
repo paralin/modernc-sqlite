@@ -13,6 +13,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"regexp"
@@ -753,6 +754,98 @@ func TestRegisteredFunctions(t *testing.T) {
 				tt.Fatal(count, 2)
 			}
 		})
+	})
+
+	t.Run("backup, commit and close", func(tt *testing.T) {
+		type backuper interface {
+			NewBackup(string) (*sqlite3.Backup, error)
+			NewRestore(string) (*sqlite3.Backup, error)
+		}
+
+		tmpDir, err := os.MkdirTemp(os.TempDir(), "storetest_")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(tmpDir)
+
+		var inMemDB driver.Conn
+
+		withDB(func(db *sql.DB) {
+			if _, err := db.Exec("create table t(b text); insert into t values (?), (?)", "text1", "text2"); err != nil {
+				tt.Fatal(err)
+			}
+
+			// Backup the DB to an in-memory instance
+			func() {
+				conn, err := db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer conn.Close()
+				err = conn.Raw(func(driverConn any) error {
+					bck, err := driverConn.(backuper).NewBackup(":memory:")
+					if err != nil {
+						return err
+					}
+					for more := true; more; {
+						more, err = bck.Step(-1)
+						if err != nil {
+							return err
+						}
+					}
+
+					inMemDB, err = bck.Commit()
+
+					return err
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}()
+		})
+
+		if inMemDB == nil {
+			tt.Fatal("in-memory database must not be nil")
+		}
+
+		querier, ok := (inMemDB).(interface {
+			Query(query string, args []driver.Value) (dr driver.Rows, err error)
+		})
+
+		if !ok {
+			tt.Fatal(fmt.Errorf("in-memory DB does not implement a Query method: %T", inMemDB))
+		}
+
+		// Check the table is complete
+		rows, err := querier.Query("select count(*) from t", nil)
+		if err != nil {
+			tt.Fatal(err)
+		}
+
+		var count int
+		var values = []driver.Value{&count}
+
+		err = rows.Next(values)
+		if err != nil {
+			tt.Fatal(err)
+		}
+
+		if (values[0]).(int64) != 2 {
+			tt.Fatal(count, 2)
+		}
+
+		err = rows.Next(values)
+		if !errors.Is(err, io.EOF) {
+			tt.Fatal(err)
+		}
+
+		if err = rows.Close(); err != nil {
+			tt.Fatal(err)
+		}
+
+		if err = inMemDB.Close(); err != nil {
+			tt.Fatal(err)
+		}
 	})
 
 	t.Run("QueryContext with context expired", func(tt *testing.T) {
