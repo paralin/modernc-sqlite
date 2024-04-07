@@ -1907,7 +1907,7 @@ type ExecQuerierContext interface {
 // Commit releases all resources associated with the Backup object but does not
 // close the destination database connection.
 //
-// The destination database connection is returned to the caller as well as an error if raised.
+// The destination database connection is returned to the caller or an error if raised.
 // It is the responsibility of the caller to handle the connection closure.
 func (b *Backup) Commit() (driver.Conn, error) {
 	rc := sqlite3.Xsqlite3_backup_finish(b.srcConn.tls, b.pBackup)
