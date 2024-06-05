@@ -8,7 +8,7 @@ require (
 	golang.org/x/sys v0.19.0
 	modernc.org/fileutil v1.3.0
 	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6
-	modernc.org/libc v1.50.9
+	modernc.org/libc v1.52.1
 	modernc.org/mathutil v1.6.0
 )
 
