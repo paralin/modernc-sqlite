@@ -803,6 +803,12 @@ func interruptOnDone(
 	}
 }
 
+var (
+	updateHooksMu sync.Mutex
+	updateHooks   = map[uintptr]func(op int, dbName, tableName string, rowid int64){}
+	updateHookID  atomic.Uintptr
+)
+
 type conn struct {
 	db  uintptr // *sqlite3.Xsqlite3
 	tls *libc.TLS
@@ -859,6 +865,62 @@ func newConn(dsn string) (*conn, error) {
 	}
 
 	return c, nil
+}
+
+// UpdateHookRegister provides registering and unregistering update hooks.
+type UpdateHookRegister interface {
+	RegisterUpdateHook(f func(op int, dbName, tableName string, rowid int64)) (id uintptr, err error)
+	UnregisterUpdateHook(id uintptr) (err error)
+}
+
+// RegisterUpdateHook registers a data change notification callback. See
+// https://www.sqlite.org/c3ref/update_hook.html for details.
+//
+// The retuned 'id' can be used to unregister the hook.
+func (c *conn) RegisterUpdateHook(f func(op int, dbName, tableName string, rowid int64)) (id uintptr, err error) {
+	id = updateHookID.Add(1)
+	updateHooksMu.Lock()
+
+	defer updateHooksMu.Unlock()
+
+	updateHooks[id] = f
+	prev := sqlite3.Xsqlite3_update_hook(c.tls, c.db, fp(updateHook), id)
+	delete(updateHooks, prev)
+	return id, nil
+}
+
+// UnregisterUpdateHook removes the update hook associated with id.
+func (c *conn) UnregisterUpdateHook(id uintptr) (err error) {
+	updateHooksMu.Lock()
+
+	defer updateHooksMu.Unlock()
+
+	delete(updateHooks, id)
+	sqlite3.Xsqlite3_update_hook(c.tls, c.db, fp(noUpdateHook), 0)
+	return nil
+}
+
+func fp(f interface{}) uintptr {
+	type iface [2]uintptr
+	return (*iface)(unsafe.Pointer(&f))[1]
+}
+
+func noUpdateHook(tls *libc.TLS, clientData uintptr, op int32, dbName, tableName uintptr, rowid int64) {
+	// nop
+}
+
+// void *sqlite3_update_hook(
+//
+//	sqlite3* db,
+//	void(*)(void *,int ,char const *,char const *,sqlite3_int64) updateFunc,
+//	void* clientData
+//
+// );
+func updateHook(tls *libc.TLS, clientData uintptr, op int32, dbName, tableName uintptr, rowid int64) {
+	updateHooksMu.Lock()
+	f := updateHooks[clientData]
+	updateHooksMu.Unlock()
+	f(int(op), libc.GoString(dbName), libc.GoString(tableName), rowid)
 }
 
 func getVFSName(query string) (r string, err error) {

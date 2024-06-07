@@ -3316,3 +3316,58 @@ func TestIssue171(t *testing.T) {
 		t.Fatal(m)
 	}
 }
+
+// https://gitlab.com/cznic/sqlite/-/issues/184
+func TestIssue184(t *testing.T) {
+	tempDir := t.TempDir()
+	serverDsn := filepath.Join(tempDir, "foo.db")
+	db, err := sql.Open("sqlite", serverDsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := context.Background()
+	// Register the update hook callback
+	conn, _ := db.Conn(ctx)
+	_, err = conn.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS foo (
+    id INTEGER PRIMARY KEY NOT NULL,
+	description TEXT
+);
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var hookID uintptr
+	var reg UpdateHookRegister
+	var fired string
+	if err := conn.Raw(func(driverConn any) (err error) {
+		var ok bool
+		if reg, ok = driverConn.(UpdateHookRegister); !ok {
+			t.Fatal("driverConn is not an UpdateHookRegister")
+		}
+
+		if hookID, err = reg.RegisterUpdateHook(func(op int, dbName, tableName string, rowid int64) {
+			fired = fmt.Sprintf("op=%v dbName=%v tableName=%v rowid=%v", op, dbName, tableName, rowid)
+		}); err != nil {
+			t.Fatal(err)
+		}
+
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	defer reg.UnregisterUpdateHook(hookID)
+
+	t.Logf("we're about to insert a row into the DB; we expect the update callback to print information about that row. If not, something is broken.\n")
+	if _, err = conn.ExecContext(ctx, `INSERT INTO foo (id, description) VALUES (1, "this is the first");`); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("fired: %v", fired)
+	if fired == "" {
+		t.Fatal("update hook was not invoked")
+	}
+}
